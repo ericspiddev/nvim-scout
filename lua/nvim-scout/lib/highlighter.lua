@@ -154,6 +154,8 @@ function scout_highlighter:highlight_file_by_pattern(win_buf, pattern)
 
     if #self.matches > 0 then
         self:update_match_count(win_buf)
+    else
+        self:show_no_matches(win_buf)
     end
 end
 
@@ -174,6 +176,13 @@ end
 function scout_highlighter:show_invalid_pattern(buffer)
     self.hl_wc_ext_id = self.hl_fns.highlight(buffer, self.hl_namespace, 0, -1, {
             virt_text = { { "Invalid Pattern", "Comment" } },
+            virt_text_pos = "right_align",
+        })
+end
+
+function scout_highlighter:show_no_matches(buffer)
+    self.hl_wc_ext_id = self.hl_fns.highlight(buffer, self.hl_namespace, 0, -1, {
+            virt_text = { { "No Matches", "Comment" } },
             virt_text_pos = "right_align",
         })
 end
