@@ -45,11 +45,17 @@ function scout_keymaps:setup_history_keymaps()
 end
 
 function scout_keymaps:setup_mode_keymaps()
-    vim.keymap.set('n', self.keymaps.case_sensitive_toggle, function() self.search_bar.mode_manager:toggle_mode(consts.modes.case_sensitive) end, {
+    vim.keymap.set('n', self.keymaps.case_sensitive_toggle, function()
+        self.search_bar.mode_manager:toggle_mode(consts.modes.case_sensitive)
+        self.search_bar:run_search()
+    end, {
         buffer = self.search_bar.query_buffer,
         nowait = true,
         noremap = true})
-    vim.keymap.set('n', self.keymaps.pattern_toggle, function() self.search_bar.mode_manager:toggle_mode(consts.modes.lua_pattern) end, {
+    vim.keymap.set('n', self.keymaps.pattern_toggle, function()
+        self.search_bar.mode_manager:toggle_mode(consts.modes.lua_pattern)
+        self.search_bar:run_search()
+     end, {
         buffer = self.search_bar.query_buffer,
         nowait = true,
         noremap = true})

@@ -54,11 +54,14 @@ function scout_search_bar:on_lines_handler(...)
   local event, bufnr, changedtick,
     first_line, last_line,
     new_lastline, bytecount = ...
+    self:run_search()
+end
 
+function scout_search_bar:run_search()
     local search = self:get_window_contents() --grab the current contents of the window
     vim.schedule(function()
         self.highlighter:clear_highlights(self.highlighter.hl_buf, self.query_buffer)
-        -- anytime we search update in case the file changed... this needs to be optimized for better performance
+        -- anytime we search update in case the file changed... this needs to be optimized for better performance?
         self.highlighter:update_hl_context(self.highlighter.hl_buf, self.query_buffer)
         self.highlighter.match_index = 1
         self.highlighter.matches = {}

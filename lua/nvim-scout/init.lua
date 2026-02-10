@@ -52,6 +52,7 @@ function M.update_scout_context(ev)
         else
             local file_buf = vim.api.nvim_win_get_buf(M.search_bar.host_window)
             M.search_bar.highlighter:update_hl_context(file_buf, M.search_bar.query_buffer)
+            M.search_bar:run_search() -- search again
         end
     end
 end
