@@ -13,6 +13,7 @@ keymap_defaults = {
     toggle_search = '/',
     focus_search = 'f',
     clear_search = 'c',
+    search_curr_word = '#',
     prev_result = 'N',
     next_result = 'n',
     prev_history = '<UP>',

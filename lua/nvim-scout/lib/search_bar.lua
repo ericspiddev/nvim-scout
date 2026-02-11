@@ -116,6 +116,15 @@ function scout_search_bar:move_window()
     end
 end
 
+function scout_search_bar:search_cursor_word()
+    local curr_word = vim.fn.expand("<cword>")
+    if not self:is_open() then
+        self:open()
+    end
+    vim.api.nvim_buf_set_lines(self.query_buffer, 0, 1, true, {curr_word})
+    vim.api.nvim_set_current_win(self.win_id)
+end
+
 function scout_search_bar:cap_width(width)
     if width > self.MAX_WIDTH then
         width = self.MAX_WIDTH
