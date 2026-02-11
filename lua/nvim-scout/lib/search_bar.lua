@@ -152,7 +152,6 @@ function scout_search_bar:open()
         self.query_buffer = vim.api.nvim_create_buf(consts.buffer.LIST_BUFFER, consts.buffer.SCRATCH_BUFFER)
         self.query_win_config.width = self:get_search_bar_width(self.host_window, self.width_percent)
         self.query_win_config.col = self:get_search_bar_col(self.host_window, self.query_win_config.width)
-        vim.print("Config col gets set to " .. self.query_win_config.col)
         self.win_id = vim.api.nvim_open_win(self.query_buffer, self.should_enter, self.query_win_config)
         vim.api.nvim_buf_set_name(self.query_buffer, consts.search.search_name)
 
