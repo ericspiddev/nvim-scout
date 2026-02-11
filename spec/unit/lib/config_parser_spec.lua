@@ -163,6 +163,7 @@ describe('Config Parser', function ()
         local next_h_or = "g"
         local cs_or = "h"
         local pat_or = "i"
+        local curr_word_search_or = "9"
 
         local keymap_or = {
             toggle_search = tog_or,
@@ -172,6 +173,7 @@ describe('Config Parser', function ()
             next_result = next_or,
             prev_history = prev_h_or,
             next_history = next_h_or,
+            search_curr_word = curr_word_search_or,
             case_sensitive_toggle = cs_or,
             pattern_toggle = pat_or,
         }

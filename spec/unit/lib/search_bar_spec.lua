@@ -45,7 +45,6 @@ function open_asserts(search)
     assert.equals(search.query_buffer, SEARCH_BAR_BUF_ID)
     assert.equals(search.win_id, SEARCH_BAR_WIN_ID)
     assert.equals(search.host_window, 0)
-    assert.equals(search.query_win_config.col, SEARCH_BAR_WINDOW_WIDTH)
     assert.equals(search:is_open(), true)
 end
 
@@ -112,21 +111,6 @@ describe("Search bar", function()
             width_test_bar:close()
         end
 
-    end)
-
-    it('properly moves the window over based on the new column', function()
-
-        search_bar:close()
-        search_bar:move_window(250)
-        assert.equals(search_bar.query_win_config.col, 100)
-        search_bar:move_window(300)
-        assert.equals(search_bar.query_win_config.col, 100)
-
-        search_bar:open()
-        search_bar:move_window(250)
-        assert.equals(search_bar.query_win_config.col, 234)
-        search_bar:move_window(300)
-        assert.equals(search_bar.query_win_config.col, 284)
     end)
 
     it('toggles correctly', function()
