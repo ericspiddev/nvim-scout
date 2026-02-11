@@ -35,7 +35,8 @@
         FORWARD = 1,
         BACKWARD = -1,
         search_name = "[SCOUT]",
-        max_results = 10001
+        max_results = 10001,
+        virt_text_hl = "Comment"
      },
      lines = {
          START = 0,
