@@ -35,11 +35,10 @@ function M.refocus_search()
     end
 end
 
-function M.resize_scout_window(ev)
+function M.move_scout_search_bar()
     if vim.api.nvim_win_is_valid(M.search_bar.host_window) then
-        local width = vim.api.nvim_win_get_width(M.search_bar.host_window)
         vim.api.nvim_win_call(M.search_bar.host_window, function()
-            M.search_bar:move_window(width)
+            M.search_bar:move_window()
         end)
     end
 end
@@ -59,7 +58,7 @@ end
 
 function M.main(keymap_conf)
     vim.api.nvim_create_autocmd({consts.events.WINDOW_RESIZED}, {
-        callback = M.resize_scout_window
+        callback = M.move_scout_search_bar
     })
     vim.api.nvim_create_autocmd({consts.events.WINDOW_LEAVE_EVENT}, {
         callback = function(ev)

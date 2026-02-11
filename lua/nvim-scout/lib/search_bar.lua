@@ -106,10 +106,11 @@ end
 --- @new_col: the new column where the new window has opened
 --- this is used to calculate where to start the search bar window
 ---
-function scout_search_bar:move_window(new_col)
+function scout_search_bar:move_window()
     if self:is_open() then
-        if new_col > 0 then
-            self.query_win_config.col = new_col - self.query_win_config.width - 1
+        if vim.api.nvim_win_is_valid(self.host_window) then
+            self.query_win_config.width = self:get_search_bar_width(self.host_window, self.width_percent)
+            self.query_win_config.col = self:get_search_bar_col(self.host_window, self.query_win_config.width)
             vim.api.nvim_win_set_config(self.win_id, self.query_win_config)
         end
     end
@@ -134,14 +135,15 @@ function scout_search_bar:open()
         Scout_Logger:debug_print("Opening window")
         local window = vim.api.nvim_get_current_win()
         local config = vim.api.nvim_win_get_config(window)
-        if config.relative ~= "" then
+        if config.relative ~= "" then -- IGNORE floating windows
             return
         end
         self.host_window = window
         self.width_percent = self:cap_width(self.width_percent)
         self.query_buffer = vim.api.nvim_create_buf(consts.buffer.LIST_BUFFER, consts.buffer.SCRATCH_BUFFER)
-        self.query_win_config.width = math.floor(vim.api.nvim_win_get_width(window) * self.width_percent)
-        self.query_win_config.col = vim.api.nvim_win_get_width(window)
+        self.query_win_config.width = self:get_search_bar_width(self.host_window, self.width_percent)
+        self.query_win_config.col = self:get_search_bar_col(self.host_window, self.query_win_config.width)
+        vim.print("Config col gets set to " .. self.query_win_config.col)
         self.win_id = vim.api.nvim_open_win(self.query_buffer, self.should_enter, self.query_win_config)
         vim.api.nvim_buf_set_name(self.query_buffer, consts.search.search_name)
 
@@ -157,6 +159,19 @@ function scout_search_bar:open()
         keymap_mgr:setup_scout_keymaps()
     else
         Scout_Logger:debug_print("Attempted to open an already open window ignoring...")
+    end
+end
+
+function scout_search_bar:get_search_bar_col(hl_buf_window, search_bar_width)
+    local hl_win_start_col = vim.api.nvim_win_get_position(hl_buf_window)[2]
+    local hl_win_width = vim.api.nvim_win_get_width(hl_buf_window)
+
+    return hl_win_start_col + hl_win_width - search_bar_width - 1
+end
+
+function scout_search_bar:get_search_bar_width(hl_buf_window, width_percent)
+    if vim.api.nvim_win_is_valid(hl_buf_window) then
+        return math.floor(vim.api.nvim_win_get_width(hl_buf_window) * width_percent)
     end
 end
 
