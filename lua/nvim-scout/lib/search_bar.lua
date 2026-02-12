@@ -116,12 +116,35 @@ function scout_search_bar:move_window()
     end
 end
 
-function scout_search_bar:search_cursor_word()
-    local curr_word = vim.fn.expand("<cword>")
-    if not self:is_open() then
-        self:open()
+function scout_search_bar:search_current_selection()
+    local selection = ""
+    local mode = vim.api.nvim_get_mode().mode
+    if mode == "v" or mode == "V" then
+        local v_start = vim.fn.getpos('v') -- get start of visual selection
+        local v_end = vim.fn.getpos('.') -- current cursor position
+
+        if v_start[2] > v_end[2] or (v_start[2] == v_end[2] and (v_start[3] > v_end[3]))then -- user selected backwards so invert
+            local tmp = v_start
+            v_start = v_end
+            v_end = tmp
+        end
+        for _, str in ipairs(vim.api.nvim_buf_get_text(vim.api.nvim_win_get_buf(0), v_start[2] - 1, v_start[3] - 1, v_end[2] - 1, v_end[3], {})) do
+            selection = selection .. str
+        end
+        self:search_selection(selection)
     end
-    vim.api.nvim_buf_set_lines(self.query_buffer, 0, 1, true, {curr_word})
+end
+
+function scout_search_bar:search_cursor_word()
+    local selection = vim.fn.expand("<cword>") -- in the future maybe we can check for the keypress and grab more then one word?
+    self:search_selection(selection)
+end
+
+function scout_search_bar:search_selection(selection)
+    if not self:is_open() then
+        self:open(false)
+    end
+    vim.api.nvim_buf_set_lines(self.query_buffer, 0, 1, true, {selection})
     vim.api.nvim_set_current_win(self.win_id)
 end
 
@@ -139,7 +162,10 @@ end
 --- function considers the width_percent that the bar should
 --- take up and then calculates it's width based on that
 ---
-function scout_search_bar:open()
+function scout_search_bar:open(enter_insert)
+    if enter_insert == nil then
+        enter_insert = true
+    end
     if not self:is_open() then
         Scout_Logger:debug_print("Opening window")
         local window = vim.api.nvim_get_current_win()
@@ -163,7 +189,11 @@ function scout_search_bar:open()
         self.search_events = events:new(consts.buffer.VALID_LUA_EVENTS) -- make new events table with buffer events
         self.search_events:add_event("on_lines", self, "on_lines_handler") -- add the on_lines_handler to search bar's
         self.search_events:attach_buffer_events(self.query_buffer)
-        vim.cmd('startinsert') -- allow for typing right away
+        if enter_insert then
+            vim.cmd('startinsert') -- allow for typing right away
+        else
+            vim.cmd('normal 0') -- hack to go back to normal mode
+        end
         keymap_mgr:setup_scout_keymaps()
     else
         Scout_Logger:debug_print("Attempted to open an already open window ignoring...")

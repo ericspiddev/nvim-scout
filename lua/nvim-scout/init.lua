@@ -60,6 +60,10 @@ function M.search_curr_cursor_word()
     M.search_bar:search_cursor_word()
 end
 
+function M.search_curr_v_selection()
+    M.search_bar:search_current_selection()
+end
+
 function M.main(keymap_conf)
     vim.api.nvim_create_autocmd({consts.events.WINDOW_RESIZED}, {
         callback = M.move_scout_search_bar
@@ -78,5 +82,6 @@ function M.main(keymap_conf)
     vim.keymap.set('n', keymap_conf.toggle_search, M.toggle, {}) -- likely change for obvious reasons later
     vim.keymap.set('n', keymap_conf.focus_search, M.refocus_search, {})
     vim.keymap.set('n', keymap_conf.search_curr_word, M.search_curr_cursor_word, {})
+    vim.keymap.set('v', keymap_conf.search_curr_word, M.search_curr_v_selection, {})
 end
 return M
