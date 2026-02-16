@@ -34,6 +34,10 @@
          MATCH_HIGHLIGHT = "Search",
          CURR_MATCH_HIGHLIGHT = "WildMenu" --CurSearch",
      },
+     virt_text = {
+         no_matches = "No Matches",
+         invalid_pattern = "Invalid Pattern"
+     },
      search = {
         FORWARD = 1,
         BACKWARD = -1,

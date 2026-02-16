@@ -42,7 +42,7 @@ local async_invalid_check = function (...)
     local buffer = search.query_buffer
     local hl_ext_mark = hl.hl_wc_ext_id
     local extmark_details = vim.api.nvim_buf_get_extmark_by_id(buffer, hl.hl_namespace, hl_ext_mark, {details = true})[3]
-    assert.equals(extmark_details.virt_text[1][1], "Invalid Pattern")
+    assert.equals(extmark_details.virt_text[1][1], consts.virt_text.invalid_pattern)
 
 end
 

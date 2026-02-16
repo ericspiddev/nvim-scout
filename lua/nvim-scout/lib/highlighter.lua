@@ -155,7 +155,7 @@ function scout_highlighter:highlight_file_by_pattern(win_buf, pattern)
     if #self.matches > 0 then
         self:update_match_count(win_buf)
     else
-        self:set_search_bar_hint_text(win_buf, "No Matches")
+        self:set_search_bar_hint_text(win_buf, consts.virt_text.no_matches)
     end
 end
 
@@ -164,7 +164,7 @@ function scout_highlighter:protected_search(line, pattern, start_index, exact_ma
     if not success then
         local error = err_or_start
         if error:find("malformed pattern") or error:find("unbalanced pattern") or error:find("invalid capture index")then
-            self:set_search_bar_hint_text(win_buf, "Invalid Pattern")
+            self:set_search_bar_hint_text(win_buf, consts.virt_text.invalid_pattern)
         else
             Scout_Logger:error_print("Error while searching ", error)
         end
