@@ -10,7 +10,10 @@
         WINDOW_ENTER_EVENT = "WinEnter",
         WINDOW_LEAVE_EVENT = "WinLeave",
         WINDOW_RESIZED = "WinResized",
-        BUFFER_ENTER = "BufEnter"
+        BUFFER_ENTER = "BufEnter",
+        WINDOW_CLOSED = "WinClosed",
+        QUIT_PRE_HOOK = "QuitPre",
+        BUFFER_WIN_LEAVE = "BufWinLeave"
      },
      position = {
         ROW_INDEX = 1,

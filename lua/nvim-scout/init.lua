@@ -76,6 +76,14 @@ function M.search_curr_v_selection()
     M.search_bar:search_current_selection()
 end
 
+function M.scout_graceful_close(ev)
+    local targetWin = ev.file
+    if targetWin:find(consts.search.search_name, 1, true) then
+        M.search_bar.highlighter:clear_highlights(M.search_bar.highlighter.hl_buf)
+        M.search_bar:close()
+    end
+end
+
 function M.main(keymap_conf)
     vim.api.nvim_create_autocmd({consts.events.WINDOW_RESIZED}, {
         callback = M.move_scout_search_bar
@@ -93,6 +101,10 @@ function M.main(keymap_conf)
 
     vim.api.nvim_create_autocmd({consts.events.BUFFER_ENTER}, {
         callback = M.force_search_window
+    })
+
+    vim.api.nvim_create_autocmd({consts.events.QUIT_PRE_HOOK}, {
+        callback = M.scout_graceful_close
     })
 
     vim.keymap.set('n', keymap_conf.toggle_search, M.toggle, {}) -- likely change for obvious reasons later
