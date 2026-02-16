@@ -30,6 +30,9 @@ function scout_keymaps:setup_search_keymaps()
         buffer = self.search_bar.query_buffer,
         nowait= true,
         noremap = true})
+
+    -- disable ENTER in buffer
+    vim.keymap.set('i', "<Enter>", function () end, {buffer = self.search_bar.query_buffer})
 end
 
 function scout_keymaps:setup_history_keymaps()

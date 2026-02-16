@@ -44,7 +44,10 @@ function spec_utils:open_test_buffer(filename)
     vim.cmd.edit(file_path)
 end
 
-function spec_utils:keycodes_user_keypress(keycode_key)
+function spec_utils:keycodes_user_keypress(keycode_key, mode)
+    if mode then
+        vim.api.nvim_feedkeys(mode, "i", false)
+    end
     local keycode = vim.api.nvim_replace_termcodes(keycode_key, true, false, true) -- check these params....
     vim.api.nvim_feedkeys(keycode, "x", false)
 end
