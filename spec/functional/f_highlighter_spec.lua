@@ -62,6 +62,12 @@ local async_check_selected_hl = function(...)
 
 end
 
+local async_check_extmark_count = function (...)
+    local hl, count = ...
+    local extmarks = vim.api.nvim_buf_get_extmarks(hl.hl_buf, hl.hl_namespace, 0, -1, {details = true} )
+    assert.equals(count, #extmarks)
+end
+
 local async_check_virt_text = function (...)
     local hl, buf, match_count, direction = ...
     utils:emulate_user_keypress(direction)
@@ -69,6 +75,14 @@ local async_check_virt_text = function (...)
     assert(wc_extmark)
     local match_text = wc_extmark[3].virt_text[1][1] -- weird indexing but it works?
     assert.equals(match_count .. "/" .. #hl.matches, match_text)
+end
+
+local async_check_no_matches = function (...)
+    local hl, buf = ...
+    local wc_extmark = vim.api.nvim_buf_get_extmark_by_id(buf, hl.hl_namespace, hl.hl_wc_ext_id, {details = true} )
+    assert(wc_extmark)
+    local match_text = wc_extmark[3].virt_text[1][1] -- weird indexing but it works?
+    assert.equals(consts.virt_text.no_matches, match_text)
 end
 
 describe('Functional: Highlighter', function ()
@@ -286,6 +300,63 @@ describe('Functional: Highlighter', function ()
         utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 7, def_keymaps.prev_result)
         utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 6, def_keymaps.prev_result)
         utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 5, def_keymaps.prev_result)
+    end)
+
+    it('displays no matches when a search yields no matches', function ()
+        local test_buf = "c_buffer.c"
+        local hl = scout.search_bar.highlighter
+        utils:open_test_buffer(test_buf)
+        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_typing("Eric Spidle this cannot be in the file")
+
+        utils:async_asserts(consts.test.async_delay, async_check_no_matches, hl, scout.search_bar.query_buffer)
+
+        test_buf = "js_buffer.js"
+        func_helpers:reset_open_buf(test_buf)
+        utils:emulate_user_typing("privateId1")
+        utils:async_asserts(consts.test.async_delay, async_check_no_matches, hl, scout.search_bar.query_buffer)
+    end)
+
+    it('clears the extmarks when leaving the search bar and restores them on refocus', function ()
+        local test_buf = "js_buffer.js"
+        local hl = scout.search_bar.highlighter
+        utils:open_test_buffer(test_buf)
+        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_typing("node")
+        utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 20)
+        utils:keycodes_user_keypress("<C-w>h") -- switch out of window
+        utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 0)
+
+        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 20)
+        func_helpers:reset_search_bar()
+
+        utils:emulate_user_typing("const")
+        utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 15)
+        utils:keycodes_user_keypress("<C-w>h") -- switch out of window
+        utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 0)
+
+        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 15)
+    end)
+
+
+    it('refreshes results if a change is made after switching out of search', function ()
+        local test_buf = "c_buffer.c"
+        local hl = scout.search_bar.highlighter
+        utils:open_test_buffer(test_buf)
+        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_typing("node")
+        utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 39)
+        utils:keycodes_user_keypress("<C-w>h") -- switch out of window
+        utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 0)
+        local test_line = 49
+        local test_col = 6
+        vim.api.nvim_win_set_cursor(0, {test_line, test_col})
+        utils:emulate_user_keypress('ciw')
+        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 38)
+
     end)
 
 end)

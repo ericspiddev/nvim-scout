@@ -241,4 +241,45 @@ describe('Functional: Modes', function ()
         utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
         utils:async_asserts(consts.test.async_delay, async_match_pos_check, hl.matches)
     end)
+
+    it('adjusts search results when a mode toggles on and off', function ()
+        local test_buf = "c_buffer.c"
+        local hl = scout.search_bar.highlighter
+        local expected_matches = 5
+        func_helpers:reset_search_bar()
+        func_helpers:reset_open_buf(test_buf)
+        utils:emulate_user_typing("compare")
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        utils:keycodes_user_keypress(def_keymaps.case_sensitive_toggle)
+        expected_matches = 3
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        expected_matches = 5
+        utils:keycodes_user_keypress(def_keymaps.case_sensitive_toggle)
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        func_helpers:reset_search_bar()
+        utils:emulate_user_typing("Compare")
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        utils:keycodes_user_keypress(def_keymaps.case_sensitive_toggle)
+        expected_matches = 2
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        test_buf = "lua_buffer.lua"
+        expected_matches = 1
+        func_helpers:reset_search_bar()
+        func_helpers:reset_open_buf(test_buf)
+        utils:emulate_user_typing("[\"app_name\"]")
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        utils:keycodes_user_keypress(def_keymaps.pattern_toggle)
+        expected_matches = 610
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        utils:keycodes_user_keypress(def_keymaps.pattern_toggle)
+        expected_matches = 1
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+    end)
 end)

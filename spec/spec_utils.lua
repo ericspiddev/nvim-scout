@@ -15,6 +15,21 @@ function spec_utils:emulate_user_keypress(key)
     vim.api.nvim_feedkeys(key, "x", true)
 end
 
+function spec_utils:highlight_words_in_visual_mode(num_words, direction)
+    vim.api.nvim_feedkeys('v', "n", true) -- set up visual mode
+    for _ = 1, num_words do
+        if direction then
+            vim.api.nvim_feedkeys('b', "n", true) -- go backwards
+        else
+            vim.api.nvim_feedkeys('w', "n", true) -- get next word
+        end
+    end
+
+    if not direction then
+        vim.api.nvim_feedkeys('e', "n", true) -- set up visual mode
+    end
+end
+
 function spec_utils:async_asserts(delay, async_asserts, ...)
     local co = coroutine.running()
     vim.defer_fn(function ()
