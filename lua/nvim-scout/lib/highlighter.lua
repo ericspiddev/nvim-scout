@@ -366,8 +366,10 @@ end
 ---
 function scout_highlighter:clear_highlights(hl_buf, win_buf)
     self:clear_match_count(win_buf)
-    for _, match_id in ipairs(self:get_buffer_current_hls(hl_buf)) do
-        self.hl_fns.remove_highlight(self.hl_buf, self.hl_namespace, match_id)
+    if self:get_buffer_current_hls(hl_buf) then
+        for _, match_id in ipairs(self:get_buffer_current_hls(hl_buf)) do
+            self.hl_fns.remove_highlight(self.hl_buf, self.hl_namespace, match_id)
+        end
     end
 end
 
