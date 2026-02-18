@@ -88,6 +88,17 @@ function scout_search_bar:get_window_contents()
 end
 
 -------------------------------------------------------------
+--- search_bar.set_window_contents: set the contents of the
+--- search bar window
+---
+function scout_search_bar:set_window_contents(contents)
+    if self.query_buffer ~= consts.buffer.INVALID_BUFFER then
+        vim.api.nvim_buf_set_lines(self.query_buffer, consts.lines.START, consts.lines.END,
+                              true, {contents})
+    end
+end
+
+-------------------------------------------------------------
 --- search_bar.toggle: toggles the status of the window so
 --- if it's closed open it and vice versa
 ---
@@ -144,7 +155,7 @@ function scout_search_bar:search_selection(selection)
     if not self:is_open() then
         self:open(false)
     end
-    vim.api.nvim_buf_set_lines(self.query_buffer, 0, 1, true, {selection})
+    self:set_window_contents(selection)
     vim.api.nvim_set_current_win(self.win_id)
 end
 
@@ -162,7 +173,10 @@ end
 --- function considers the width_percent that the bar should
 --- take up and then calculates it's width based on that
 ---
-function scout_search_bar:open(enter_insert)
+function scout_search_bar:open(enter_insert, focus_search)
+    if focus_search == nil then
+        focus_search = true
+    end
     if enter_insert == nil then
         enter_insert = true
     end
@@ -178,7 +192,7 @@ function scout_search_bar:open(enter_insert)
         self.query_buffer = vim.api.nvim_create_buf(consts.buffer.LIST_BUFFER, consts.buffer.SCRATCH_BUFFER)
         self.query_win_config.width = self:get_search_bar_width(self.host_window, self.width_percent)
         self.query_win_config.col = self:get_search_bar_col(self.host_window, self.query_win_config.width)
-        self.win_id = vim.api.nvim_open_win(self.query_buffer, self.should_enter, self.query_win_config)
+        self.win_id = vim.api.nvim_open_win(self.query_buffer, focus_search, self.query_win_config)
         vim.api.nvim_buf_set_name(self.query_buffer, consts.search.search_name)
 
         self.mode_manager:update_relative_window(self.win_id)
@@ -259,14 +273,12 @@ end
 
 function scout_search_bar:next_history_entry()
     local entry = self.history:get_next_entry()
-    vim.api.nvim_buf_set_lines(self.query_buffer, consts.lines.START, consts.lines.END,
-                              true, {entry})
+    self:set_window_contents(entry)
 end
 
 function scout_search_bar:previous_history_entry()
     local entry = self.history:get_previous_entry()
-    vim.api.nvim_buf_set_lines(self.query_buffer, consts.lines.START, consts.lines.END,
-                              true, {entry})
+    self:set_window_contents(entry)
 end
 
 -------------------------------------------------------------

@@ -93,6 +93,7 @@ function M.main(keymap_conf)
             if ev.buf == M.search_bar.query_buffer then
                 M.search_bar.highlighter:clear_highlights(M.search_bar.highlighter.hl_buf)
             end
+            M.search_bar.was_last_focused = ev.buf == M.search_bar.query_buffer
         end
     })
     vim.api.nvim_create_autocmd({consts.events.BUFFER_ENTER}, {
@@ -107,6 +108,25 @@ function M.main(keymap_conf)
         callback = M.scout_graceful_close
     })
 
+    vim.api.nvim_create_autocmd({consts.events.WINDOW_ENTER_EVENT}, {
+        callback = function()
+            local new_window = vim.api.nvim_get_current_win()
+            local config = vim.api.nvim_win_get_config(new_window)
+            if config.relative ~= "" then -- IGNORE floating windows
+                return
+            end
+            if M.search_bar:is_open() and new_window ~= M.search_bar.win_id and new_window ~= M.search_bar.host_window then
+                local contents = M.search_bar:get_window_contents()
+                M.search_bar:close()
+                if M.search_bar.was_last_focused then -- there's likely a better way to handle this...?
+                    M.search_bar:open(false, true) -- do not enter insert mode or DO focus the window
+                else
+                    M.search_bar:open(false, false) -- do not enter insert mode and do not focus the window
+                end
+                M.search_bar:set_window_contents(contents)
+            end
+        end
+    })
     vim.keymap.set('n', keymap_conf.toggle_search, M.toggle, {}) -- likely change for obvious reasons later
     vim.keymap.set('n', keymap_conf.focus_search, M.refocus_search, {})
     vim.keymap.set('n', keymap_conf.search_curr_word, M.search_curr_cursor_word, {})
