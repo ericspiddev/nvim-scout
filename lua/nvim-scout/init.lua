@@ -108,8 +108,8 @@ function M.main(keymap_conf)
         callback = M.scout_graceful_close
     })
 
-    vim.api.nvim_create_autocmd({consts.events.WINDOW_ENTER_EVENT}, {
-        callback = function()
+    vim.api.nvim_create_autocmd({consts.events.TAB_ENTER_EVENT}, {
+        callback = function(ev)
             local new_window = vim.api.nvim_get_current_win()
             local config = vim.api.nvim_win_get_config(new_window)
             if config.relative ~= "" then -- IGNORE floating windows

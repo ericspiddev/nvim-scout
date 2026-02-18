@@ -13,6 +13,7 @@
         BUFFER_ENTER = "BufEnter",
         WINDOW_CLOSED = "WinClosed",
         QUIT_PRE_HOOK = "QuitPre",
+        TAB_ENTER_EVENT = "TabEnter",
         BUFFER_WIN_LEAVE = "BufWinLeave"
      },
      position = {
