@@ -62,7 +62,7 @@ describe('Functional: Search bar', function()
         utils:keycodes_user_keypress("<C-w>h") -- switch out of window
         assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
 
-        utils:emulate_user_keypress(default_conf.keymaps.focus_search)
+        utils:emulate_user_keypress(default_conf.keymaps.toggle_focus)
         assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
     end)
 

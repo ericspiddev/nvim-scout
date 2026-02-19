@@ -116,7 +116,7 @@ describe('Functional: Highlighter', function ()
         local test_buf = "c_buffer.c"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
 
         utils:emulate_user_typing("n->")
         local expected_matches = 10
@@ -150,7 +150,7 @@ describe('Functional: Highlighter', function ()
         local test_buf = "c_buffer.c"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
 
         utils:emulate_user_typing("node")
         local expected_matches = 39
@@ -181,7 +181,7 @@ describe('Functional: Highlighter', function ()
         local test_buf = "cursor_test.txt"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("string")
 
         utils:async_asserts(consts.test.async_delay, async_next_match, hl, {1,6})
@@ -205,7 +205,7 @@ describe('Functional: Highlighter', function ()
         local test_buf = "cursor_test.txt"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("cursor")
         vim.api.nvim_win_set_cursor(hl.hl_win, {2, 0})
         utils:async_asserts(consts.test.async_delay, async_next_match, hl, {2,17})
@@ -234,7 +234,7 @@ describe('Functional: Highlighter', function ()
         local test_buf = "c_buffer.c"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("void")
 
         utils:async_asserts(consts.test.async_delay, async_extmark_assert, hl)
@@ -255,7 +255,7 @@ describe('Functional: Highlighter', function ()
         local test_buf = "c_buffer.c"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("void")
         utils:async_asserts(consts.test.async_delay, async_check_selected_hl, hl, 1, def_keymaps.next_result)
         utils:async_asserts(consts.test.async_delay, async_check_selected_hl, hl, 2, def_keymaps.next_result)
@@ -283,7 +283,7 @@ describe('Functional: Highlighter', function ()
         local test_buf = "lua_buffer.lua"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("cur")
 
         utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 1, def_keymaps.next_result)
@@ -306,7 +306,7 @@ describe('Functional: Highlighter', function ()
         local test_buf = "c_buffer.c"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("Eric Spidle this cannot be in the file")
 
         utils:async_asserts(consts.test.async_delay, async_check_no_matches, hl, scout.search_bar.query_buffer)
@@ -321,13 +321,13 @@ describe('Functional: Highlighter', function ()
         local test_buf = "js_buffer.js"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("node")
         utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 20)
         utils:keycodes_user_keypress("<C-w>h") -- switch out of window
         utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 0)
 
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 20)
         func_helpers:reset_search_bar()
 
@@ -336,7 +336,7 @@ describe('Functional: Highlighter', function ()
         utils:keycodes_user_keypress("<C-w>h") -- switch out of window
         utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 0)
 
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 15)
     end)
 
@@ -345,7 +345,7 @@ describe('Functional: Highlighter', function ()
         local test_buf = "c_buffer.c"
         local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("node")
         utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 39)
         utils:keycodes_user_keypress("<C-w>h") -- switch out of window
@@ -354,7 +354,7 @@ describe('Functional: Highlighter', function ()
         local test_col = 6
         vim.api.nvim_win_set_cursor(0, {test_line, test_col})
         utils:emulate_user_keypress('ciw')
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 38)
 
     end)

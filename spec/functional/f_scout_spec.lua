@@ -33,7 +33,7 @@ describe('Functional: Scout ', function ()
         local scout = init
         local keys = default_conf.keymaps
         scout.setup()
-        test_global_keymaps(keys.toggle_search, keys.focus_search, scout)
+        test_global_keymaps(keys.toggle_search, keys.toggle_focus, scout)
     end)
 
     it('uses overridden global keymaps when passed in through the config', function ()
@@ -41,7 +41,7 @@ describe('Functional: Scout ', function ()
         local opts = {
             keymaps = {
                 toggle_search = "T",
-                focus_search = "H",
+                toggle_focus = "H",
             }
         }
         scout.setup(opts)

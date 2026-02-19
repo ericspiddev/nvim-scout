@@ -59,7 +59,7 @@ describe('Functional: Modes', function ()
 
     it('are able to be toggled all with their keymaps', function ()
         local mode_mgr = scout.search_bar.mode_manager
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:keycodes_user_keypress(def_keymaps.case_sensitive_toggle)
         utils:async_asserts(consts.test.async_delay, async_mode_assert, mode_mgr, MATCH_CASE_MODE, true)
 

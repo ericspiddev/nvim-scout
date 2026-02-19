@@ -57,7 +57,7 @@ describe('Functional: History', function ()
         local history = scout.search_bar.history
         local search_text = "init"
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         assert.equals(#history.entries, 0)
         func_helpers:search_for_text(search_text)
         utils:async_asserts(consts.test.async_delay, async_check_added_entry, history, search_text, 1)
@@ -88,8 +88,8 @@ describe('Functional: History', function ()
         local test_buf = "c_buffer.c"
         local searches = {"define", "->", "int", "const", "node *", "state", "create_"}
         utils:open_test_buffer(test_buf)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         func_helpers:search_multiple_items(searches)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
 
         utils:keycodes_user_keypress(def_keymaps.next_history)
         utils:async_asserts(consts.test.async_delay, async_check_navigate_history, scout.search_bar, 1, "define")
@@ -135,7 +135,7 @@ describe('Functional: History', function ()
         local test_buf = "lua_buffer.lua"
         local search_text = "test search"
         utils:open_test_buffer(test_buf)
-        utils:emulate_user_keypress(def_keymaps.focus_search)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing(search_text)
 
         utils:async_asserts(consts.test.async_delay, async_check_only_searches, scout.search_bar, search_text, 0)
@@ -166,6 +166,7 @@ describe('Functional: History', function ()
         local searches = {"wait it's all javascript???","wait it's all javascript???", "wait it's all javascript???" }
         local history = scout.search_bar.history
         utils:open_test_buffer(test_buf)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
         func_helpers:search_multiple_items(searches)
 
         utils:keycodes_user_keypress(def_keymaps.next_history)

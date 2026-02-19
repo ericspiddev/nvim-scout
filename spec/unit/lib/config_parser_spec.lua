@@ -85,7 +85,7 @@ describe('Config Parser', function ()
         local defaults = config.defaults
         assert.equals(conf.keymaps.toggle_search, '<leader>/')
         assert.equals(conf.keymaps.case_sensitive_toggle, 'M')
-        assert.equals(conf.keymaps.focus_search, defaults.keymaps.focus_search)
+        assert.equals(conf.keymaps.toggle_focus, defaults.keymaps.toggle_focus)
         assert.equals(conf.keymaps.clear_search, defaults.keymaps.clear_search)
         assert.equals(conf.keymaps.prev_result, defaults.keymaps.prev_result)
         assert.equals(conf.keymaps.next_result, 'r')
@@ -167,7 +167,7 @@ describe('Config Parser', function ()
 
         local keymap_or = {
             toggle_search = tog_or,
-            focus_search = foc_or,
+            toggle_focus = foc_or,
             clear_search = clr_or,
             prev_result = prev_or,
             next_result = next_or,

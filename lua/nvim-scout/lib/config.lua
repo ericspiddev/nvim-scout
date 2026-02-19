@@ -11,7 +11,7 @@ search_bar_defaults = {
 
 keymap_defaults = {
     toggle_search = '/',
-    focus_search = 'f',
+    toggle_focus = 'f',
     clear_search = 'c',
     search_curr_word = '#',
     prev_result = 'N',

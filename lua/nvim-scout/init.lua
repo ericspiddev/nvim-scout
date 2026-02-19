@@ -29,9 +29,15 @@ function M.toggle()
     M.search_bar:toggle()
 end
 
-function M.refocus_search()
-    if M.search_bar:is_open() and vim.api.nvim_win_is_valid(M.search_bar.win_id) then
+function M.toggle_scout_focus()
+    local curr_buf = vim.api.nvim_get_current_buf()
+    if not M.search_bar:is_open() then
+        return
+    end
+    if curr_buf == M.search_bar.highlighter.hl_buf and vim.api.nvim_win_is_valid(M.search_bar.win_id) then
         vim.api.nvim_set_current_win(M.search_bar.win_id)
+    elseif curr_buf == M.search_bar.query_buffer then
+        vim.api.nvim_set_current_win(M.search_bar.host_window)
     end
 end
 
@@ -112,10 +118,8 @@ function M.main(keymap_conf)
         callback = function(ev)
             local new_window = vim.api.nvim_get_current_win()
             local config = vim.api.nvim_win_get_config(new_window)
-            if config.relative ~= "" then -- IGNORE floating windows
-                return
-            end
-            if M.search_bar:is_open() and new_window ~= M.search_bar.win_id and new_window ~= M.search_bar.host_window then
+
+            if M.search_bar:is_open() and new_window ~= M.search_bar.win_id and new_window ~= M.search_bar.host_window and config.relative == "" then
                 local contents = M.search_bar:get_window_contents()
                 M.search_bar:close()
                 if M.search_bar.was_last_focused then -- there's likely a better way to handle this...?
@@ -128,7 +132,7 @@ function M.main(keymap_conf)
         end
     })
     vim.keymap.set('n', keymap_conf.toggle_search, M.toggle, {}) -- likely change for obvious reasons later
-    vim.keymap.set('n', keymap_conf.focus_search, M.refocus_search, {})
+    vim.keymap.set('n', keymap_conf.toggle_focus, M.toggle_scout_focus, {})
     vim.keymap.set('n', keymap_conf.search_curr_word, M.search_curr_cursor_word, {})
     vim.keymap.set('v', keymap_conf.search_curr_word, M.search_curr_v_selection, {})
 end
