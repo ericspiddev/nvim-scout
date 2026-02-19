@@ -25,6 +25,7 @@ function M.setup(user_options)
     M.main(scout_config.keymaps)
 end
 
+-- need to clean these all up into the search bar and dedicated auto group file
 function M.toggle()
     M.search_bar:toggle()
 end
@@ -114,12 +115,17 @@ function M.main(keymap_conf)
         callback = M.scout_graceful_close
     })
 
-    vim.api.nvim_create_autocmd({consts.events.TAB_ENTER_EVENT}, {
+    vim.api.nvim_create_autocmd({consts.events.TAB_ENTER_EVENT, consts.events.WINDOW_ENTER_EVENT}, {
         callback = function(ev)
             local new_window = vim.api.nvim_get_current_win()
             local config = vim.api.nvim_win_get_config(new_window)
+            local buffer_type = vim.api.nvim_get_option_value("buftype", {buf = vim.api.nvim_get_current_buf()})
 
-            if M.search_bar:is_open() and new_window ~= M.search_bar.win_id and new_window ~= M.search_bar.host_window and config.relative == "" then
+            if buffer_type == "nofile" or config.relative ~= "" then
+                return
+            end
+
+            if M.search_bar:is_open() and new_window ~= M.search_bar.win_id and new_window ~= M.search_bar.host_window then
                 local contents = M.search_bar:get_window_contents()
                 M.search_bar:close()
                 if M.search_bar.was_last_focused then -- there's likely a better way to handle this...?
