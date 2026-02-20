@@ -62,7 +62,7 @@ function scout_search_bar:run_search()
     vim.schedule(function()
         self.highlighter:clear_highlights(self.highlighter.hl_buf, self.query_buffer)
         -- anytime we search update in case the file changed... this needs to be optimized for better performance?
-        self.highlighter:update_hl_context(self.highlighter.hl_buf, self.query_buffer)
+        self.highlighter:update_hl_context(self.highlighter.hl_buf, self.query_buffer, self.host_window)
         self.highlighter.match_index = 1
         self.highlighter.matches = {}
         Scout_Logger:debug_print("Searching buffer for pattern ", search)
@@ -198,7 +198,7 @@ function scout_search_bar:open(enter_insert, focus_search)
         self.mode_manager:update_relative_window(self.win_id)
         if self.highlighter.hl_context == consts.buffer.NO_CONTEXT then
             Scout_Logger:warning_print("No valid context found attempting to populate now")
-            self.highlighter:update_hl_context(window, self.win_id)
+            self.highlighter:update_hl_context(window, self.query_buffer, self.host_window)
         end
         self.search_events = events:new(consts.buffer.VALID_LUA_EVENTS) -- make new events table with buffer events
         self.search_events:add_event("on_lines", self, "on_lines_handler") -- add the on_lines_handler to search bar's
@@ -290,7 +290,7 @@ end
 ---
 function scout_search_bar:move_selected_match(index)
     if self.highlighter.matches ~= nil and #self.highlighter.matches > 0 then
-        self.highlighter:move_cursor(index)
+        self.highlighter:move_cursor(index, self.host_window)
         self.highlighter:clear_match_count(self.query_buffer)
         self.highlighter:update_match_count(self.query_buffer)
     else

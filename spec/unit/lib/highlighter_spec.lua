@@ -79,6 +79,7 @@ describe('highlighter', function ()
 
     it('can populate highlight context', function ()
         local buf_id = 21
+        local host_window = 1100
         local buf_content = {
             "test this content out it",
             "the lazy fox jumps over the brown log",
@@ -88,23 +89,23 @@ describe('highlighter', function ()
         local hl = highlight:new(0, "style1", "style2")
 
         create_fake_buffer(buf_content)
-        assert(hl:populate_hl_context(buf_id))
+        assert(hl:populate_hl_context(buf_id, host_window))
         assert.equals(hl.hl_context, buf_content)
         assert.equals(hl.hl_buf, buf_id)
 
         create_fake_buffer("")
-        assert(not hl:populate_hl_context(buf_id))
+        assert(not hl:populate_hl_context(buf_id, host_window))
         assert.equals(hl.hl_context, consts.buffer.NO_CONTEXT)
         assert.equals(hl.hl_buf, consts.buffer.INVALID_BUFFER)
 
         buf_id = 12
         create_fake_buffer(buf_content)
-        assert(hl:populate_hl_context(buf_id))
+        assert(hl:populate_hl_context(buf_id, host_window))
         assert.equals(hl.hl_context, buf_content)
-        assert(hl:populate_hl_context(buf_id))
+        assert(hl:populate_hl_context(buf_id, host_window))
 
         stub(vim.api, "nvim_buf_is_valid").returns(false)
-        assert(not hl:populate_hl_context(buf_id))
+        assert(not hl:populate_hl_context(buf_id, host_window))
         assert.equals(hl.hl_context, consts.buffer.NO_CONTEXT)
         assert.equals(hl.hl_buf, consts.buffer.INVALID_BUFFER)
     end)
@@ -118,17 +119,17 @@ describe('highlighter', function ()
             "idk what else to say do you?",
         }
         stub(vim.api, "nvim_buf_is_valid").returns(true)
-        stub(vim.fn, "bufwinid").returns(1010)
         local hl = highlight:new(0, "style1", "style2")
+        local new_window = 1010
         hl.hl_win = -1
         hl.hl_buf = -1
 
         create_fake_buffer(buf_content)
-        assert(hl:populate_hl_context(buf_id))
+        assert(hl:populate_hl_context(buf_id, new_window))
         assert.equals(hl.hl_buf, buf_id)
-        assert.equals(hl.hl_win, 1010)
+        assert.equals(hl.hl_win, new_window)
 
-        vim.fn.bufwinid:revert()
+        vim.api.nvim_buf_is_valid:revert()
     end)
 
     it('returns the current buffers highlights', function ()

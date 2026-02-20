@@ -48,9 +48,9 @@ end
 --- (rename to query_buffer or use buf directly?)
 --- @return: whether or not the context was updated
 ---
-function scout_highlighter:update_hl_context(hl_buf, scout_buf)
+function scout_highlighter:update_hl_context(hl_buf, scout_buf, hl_win)
     self:clear_match_count(scout_buf)
-    return self:populate_hl_context(hl_buf)
+    return self:populate_hl_context(hl_buf, hl_win)
 end
 
 -------------------------------------------------------------
@@ -60,7 +60,7 @@ end
 --- @buf_id: the buffer to load into highlight context field
 --- @return: whether or not the context was populated
 ---
-function scout_highlighter:populate_hl_context(buf_id)
+function scout_highlighter:populate_hl_context(buf_id, hl_win)
     if not vim.api.nvim_buf_is_valid(buf_id) then
         Scout_Logger.warning_print("Attempting to populate context with invalid buffer id")
         self.hl_context = consts.buffer.NO_CONTEXT
@@ -70,7 +70,7 @@ function scout_highlighter:populate_hl_context(buf_id)
     local total_lines = vim.api.nvim_buf_line_count(buf_id)
     if total_lines > 0 then
         self.hl_buf = buf_id
-        self.hl_win = vim.fn.bufwinid(buf_id)
+        self.hl_win = hl_win
 
         Scout_Logger:debug_print("Populating context with " .. total_lines .. " total lines")
 
@@ -237,7 +237,7 @@ end
 --- search result to be highlighted differently to show it's selected
 --- @direction: which way to iterate through matches (forward or backward)
 ---
-function scout_highlighter:move_cursor(index)
+function scout_highlighter:move_cursor(index, host_window)
     if not index then
         Scout_Logger:error_print("Nil index!")
         return
@@ -252,8 +252,7 @@ function scout_highlighter:move_cursor(index)
         return
     end
 
-    local buf_window = vim.fn.bufwinid(self.hl_buf)
-    if self.hl_win ~= buf_window then
+    if self.hl_win ~= host_window then
         Scout_Logger:warning_print("Window id holding buffer and stored highlight window mismatch!")
         Scout_Logger:warning_print("Expected to move cursor for window ", buf_window)
         Scout_Logger:warning_print("Actually moving through ", self.hl_win)

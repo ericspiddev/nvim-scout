@@ -19,9 +19,7 @@ function M.setup(user_options)
     }
     --Scout_Logger:debug_print("window: making a new window with config ", search_bar_config)
 
-
     M.search_bar = search_bar:new(search_bar_config, scout_config)
-    M.search_bar.highlighter:populate_hl_context(consts.window.CURRENT_WINDOW)
     M.main(scout_config.keymaps)
 end
 
@@ -54,10 +52,10 @@ function M.update_scout_context(ev)
     local enterBuf = ev.buf
     if vim.api.nvim_buf_is_valid(enterBuf) then
         if enterBuf ~= M.search_bar.query_buffer then
-            M.search_bar.highlighter:update_hl_context(ev.buf, M.search_bar.query_buffer)
+            M.search_bar.highlighter:update_hl_context(ev.buf, M.search_bar.query_buffer, M.search_bar.host_window)
         else
             local file_buf = vim.api.nvim_win_get_buf(M.search_bar.host_window)
-            M.search_bar.highlighter:update_hl_context(file_buf, M.search_bar.query_buffer)
+            M.search_bar.highlighter:update_hl_context(file_buf, M.search_bar.query_buffer, M.search_bar.host_window)
             M.search_bar:run_search() -- search again
         end
     end
