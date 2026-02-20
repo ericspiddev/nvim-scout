@@ -65,8 +65,13 @@ function M.force_search_window(ev)
     if vim.api.nvim_get_current_win() == M.search_bar.win_id then
         if M.search_bar.query_buffer and M.search_bar.query_buffer ~= consts.buffer.INVALID_BUFFER and ev.buf ~= M.search_bar.query_buffer then
             vim.api.nvim_win_set_buf(M.search_bar.win_id, M.search_bar.query_buffer) -- FIX ME: we need to close the buffer that was attempted to be opened?
+
             vim.api.nvim_win_call(M.search_bar.host_window, function()
-                vim.api.nvim_win_set_buf(0, ev.buf) -- FIX ME: we need to close the buffer that was attempted to be opened?
+                if ev.file ~= "" then
+                    vim.api.nvim_win_set_buf(M.search_bar.host_window, ev.buf) -- FIX ME: we need to close the buffer that was attempted to be opened?
+                else
+                    vim.cmd("tabnew") -- oh boy...really need to fix this
+                end
             end)
 
         end
@@ -119,11 +124,15 @@ function M.main(keymap_conf)
             local config = vim.api.nvim_win_get_config(new_window)
             local buffer_type = vim.api.nvim_get_option_value("buftype", {buf = vim.api.nvim_get_current_buf()})
 
-            if buffer_type == "nofile" or config.relative ~= "" then
+            if config.relative ~= "" or not M.search_bar:is_open() then
                 return
             end
 
-            if M.search_bar:is_open() and new_window ~= M.search_bar.win_id and new_window ~= M.search_bar.host_window then
+            if buffer_type == "nofile" and not vim.api.nvim_buf_get_name(0):find(consts.search.search_name) and ev.event == "WinEnter" then
+                return
+            end
+
+            if (ev.event == consts.events.TAB_ENTER_EVENT) or (new_window ~= M.search_bar.win_id and new_window ~= M.search_bar.host_window) then
                 local contents = M.search_bar:get_window_contents()
                 M.search_bar:close()
                 if M.search_bar.was_last_focused then -- there's likely a better way to handle this...?
