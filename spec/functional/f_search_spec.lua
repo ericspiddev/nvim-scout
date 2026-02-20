@@ -1,6 +1,7 @@
 local init = require('nvim-scout.init')
 local default_conf = require('nvim-scout.lib.config').defaults
 local utils = require('spec.spec_utils')
+local func_helpers = require('spec.functional.f_spec_helpers')
 
 describe('Functional: Search bar', function()
         local scout = init
@@ -74,5 +75,30 @@ describe('Functional: Search bar', function()
         utils:emulate_user_keypress(default_conf.keymaps.toggle_search) -- open
         assert.equals(scout.search_bar:get_window_contents(), "")
     end)
+
+    it('carries the current search contents across windows and tabs', function ()
+        utils:emulate_user_typing("Sticky string")
+        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        utils:emulate_user_keypress(default_conf.keymaps.toggle_focus)
+        func_helpers:make_new_tab_and_open_buffer("lua_buffer.lua")
+
+        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        func_helpers:make_new_tab_and_open_buffer("c_buffer.c")
+
+        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        func_helpers:make_new_tab_and_open_buffer("js_buffer.js")
+
+        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+
+        utils:emulate_user_keypress('gt')
+        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+
+        utils:emulate_user_keypress('gt')
+        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+
+        utils:emulate_user_keypress('gT')
+        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+    end)
+
 
 end)

@@ -3,6 +3,7 @@ local utils = require('spec.spec_utils')
 local consts = require('nvim-scout.lib.consts')
 local def_keymaps = require('nvim-scout.lib.config').defaults.keymaps
 local func_helpers = require('spec.functional.f_spec_helpers')
+local win_direct = func_helpers.WINDOW_DIRECTIONS
 
 function open_buffer_asserts(hl, buffer)
     utils:open_test_buffer(buffer)
@@ -340,7 +341,6 @@ describe('Functional: Highlighter', function ()
         utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 15)
     end)
 
-
     it('refreshes results if a change is made after switching out of search', function ()
         local test_buf = "c_buffer.c"
         local hl = scout.search_bar.highlighter
@@ -357,6 +357,81 @@ describe('Functional: Highlighter', function ()
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:async_asserts(consts.test.async_delay, async_check_extmark_count, hl, 38)
 
+    end)
+
+    it('runs searches across all tabs as scout follows ', function ()
+        local test_buf = "c_buffer.c"
+        local hl = scout.search_bar.highlighter
+        func_helpers:close_all_tabs_and_open_buffer(test_buf)
+
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
+        utils:emulate_user_typing("ty")
+
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
+        local expected_matches = 5
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        expected_matches = 3
+        func_helpers:make_new_tab_and_open_buffer("js_buffer.js")
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        expected_matches = 1
+        func_helpers:make_new_tab_and_open_buffer("lua_buffer.lua")
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        utils:emulate_user_keypress('gt')
+        expected_matches = 5
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+
+        utils:emulate_user_keypress('gT')
+        expected_matches = 1
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+        utils:emulate_user_keypress('gt')
+        utils:emulate_user_keypress('gt')
+        expected_matches = 3
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+    end)
+
+    it('runs searches across windows as scout follows and updates highlight window to split', function ()
+        local test_buf = "lua_buffer.lua"
+        local hl = scout.search_bar.highlighter
+        func_helpers:close_all_tabs_and_open_buffer(test_buf)
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
+        utils:emulate_user_typing("ty")
+
+        -- BUG: currently splitting inside of scout closes the current hl_buf and opens the new one
+        -- so for now refocus host window
+        utils:emulate_user_keypress(def_keymaps.toggle_focus)
+
+        local expected_matches = 1
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+        assert.equals(hl.hl_win, vim.api.nvim_get_current_win())
+
+        expected_matches = 3
+        utils:split_test_buffer("js_buffer.js")
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+        assert.equals(hl.hl_win, vim.api.nvim_get_current_win())
+
+        expected_matches = 5
+        utils:split_test_buffer("c_buffer.c")
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+        assert.equals(hl.hl_win, vim.api.nvim_get_current_win())
+
+        func_helpers:move_windows(win_direct.RIGHT)
+        expected_matches = 3
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+        assert.equals(hl.hl_win, vim.api.nvim_get_current_win())
+
+        func_helpers:move_windows(win_direct.RIGHT)
+        expected_matches = 1
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+        assert.equals(hl.hl_win, vim.api.nvim_get_current_win())
+
+        func_helpers:move_windows(win_direct.LEFT)
+        func_helpers:move_windows(win_direct.LEFT)
+        expected_matches = 5
+        utils:async_asserts(consts.test.async_delay, async_match_check, hl, expected_matches)
+        assert.equals(hl.hl_win, vim.api.nvim_get_current_win())
     end)
 
 end)

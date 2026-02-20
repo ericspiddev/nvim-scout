@@ -55,8 +55,14 @@ end
 
 function spec_utils:open_test_buffer(filename)
     local file_path = vim.fn.expand("spec/test_buffers/" .. filename)
-    local f = assert(io.open(file_path, "r"))
-    vim.cmd.edit(file_path)
+    assert(io.open(file_path, "r"))
+    vim.cmd("e! "..file_path) -- force the buffer open
+end
+
+function spec_utils:split_test_buffer(filename)
+    local file_path = vim.fn.expand("spec/test_buffers/" .. filename)
+    assert(io.open(file_path, "r"))
+    vim.cmd("vs "..file_path) -- force the buffer open
 end
 
 function spec_utils:keycodes_user_keypress(keycode_key, mode)
