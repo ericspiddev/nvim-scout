@@ -234,7 +234,7 @@ end
 ---
 function scout_search_bar:close()
     if self:is_open() then
-        close_id = self.win_id
+        local close_id = self.win_id
         self.win_id = consts.window.INVALID_WINDOW_ID
         self.host_window = consts.window.INVALID_WINDOW_ID
         Scout_Logger:debug_print("Closing open window")
@@ -243,7 +243,9 @@ function scout_search_bar:close()
         keymap_mgr:teardown_history_keymaps()
 
         self.mode_manager:close_all_modes()
-        vim.api.nvim_win_close(close_id, false)
+        if vim.api.nvim_win_is_valid(close_id) then
+            vim.api.nvim_win_close(close_id, false) -- there is a chance if the parent window is closed neovim has already closed us
+        end
         vim.api.nvim_buf_delete(self.query_buffer, {force = true}) -- buffer must be deleted after window otherwise window_close gives bad id
         self.query_buffer = consts.buffer.INVALID_BUFFER
     else
