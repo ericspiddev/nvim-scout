@@ -5,6 +5,31 @@ local utils = require('spec.spec_utils')
 local func_helpers = require('spec.functional.f_spec_helpers')
 local win_direct = func_helpers.WINDOW_DIRECTIONS
 
+
+local async_host_windows_assert = function (...)
+    local search, expected = ...
+    if not expected then
+        expected = vim.api.nvim_get_current_win()
+    end
+    assert.equals(search.host_window, expected)
+end
+
+local async_search_windows_assert = function (...)
+    local search, expected = ...
+    if not expected then
+        expected = vim.api.nvim_get_current_win()
+    end
+    assert.equals(search.win_id, expected)
+end
+
+local async_width_assert = function (...)
+    local search_bar, search_config = ...
+    local host_window_width = vim.api.nvim_win_get_width(search_bar.host_window)
+    local expected_width = math.floor(host_window_width * search_bar.width_percent)
+    assert.equals(search_config.width, expected_width)
+    assert.equals(search_config.col, search_bar:get_search_bar_col(search_bar.host_window, expected_width))
+end
+
 describe('Functional: Scout ', function ()
 
     function test_global_keymaps(toggle_key, focus_key, scout)
@@ -161,17 +186,20 @@ describe('Functional: Scout ', function ()
         func_helpers:move_windows(win_direct.LEFT)
         local second_win = vim.api.nvim_get_current_win()
         assert.are_not.equal(first_win, second_win)
-        assert.equals(search_bar.host_window, second_win)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, second_win)
+
+        func_helpers:move_windows(win_direct.RIGHT)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, first_win)
 
         -- should not open when switching between windows once closed
         search_bar:close()
         assert.is_not(search_bar:is_open())
-        assert.equals(vim.api.nvim_get_current_win(), second_win)
-        func_helpers:move_windows(win_direct.RIGHT)
-        assert.is_not(search_bar:is_open())
         assert.equals(vim.api.nvim_get_current_win(), first_win)
         func_helpers:move_windows(win_direct.LEFT)
+        assert.is_not(search_bar:is_open())
         assert.equals(vim.api.nvim_get_current_win(), second_win)
+        func_helpers:move_windows(win_direct.RIGHT)
+        assert.equals(vim.api.nvim_get_current_win(), first_win)
         assert.is_not(search_bar:is_open())
     end)
 
@@ -181,19 +209,19 @@ describe('Functional: Scout ', function ()
         local test_buf = "lua_buffer.lua"
         func_helpers:reset_open_buf(test_buf)
         search_bar:open()
-        assert.equals(vim.api.nvim_get_current_win(), scout.search_bar.win_id)
+        utils:async_asserts(consts.test.async_delay, async_search_windows_assert, scout.search_bar)
         func_helpers:make_new_tab()
-        assert.equals(vim.api.nvim_get_current_win(), scout.search_bar.win_id)
+        utils:async_asserts(consts.test.async_delay, async_search_windows_assert, scout.search_bar)
         func_helpers:make_new_tab()
-        assert.equals(vim.api.nvim_get_current_win(), scout.search_bar.win_id)
+        utils:async_asserts(consts.test.async_delay, async_search_windows_assert, scout.search_bar)
         utils:emulate_user_keypress(keymap_defaults.toggle_focus)
-        assert.equals(vim.api.nvim_get_current_win(), scout.search_bar.host_window)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar)
         func_helpers:make_new_tab()
-        assert.equals(vim.api.nvim_get_current_win(), scout.search_bar.host_window)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar)
         func_helpers:make_new_tab()
-        assert.equals(vim.api.nvim_get_current_win(), scout.search_bar.host_window)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar)
         func_helpers:make_new_tab()
-        assert.equals(vim.api.nvim_get_current_win(), scout.search_bar.host_window)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar)
     end)
 
     it('follows the user through tab navigation', function ()
@@ -207,24 +235,24 @@ describe('Functional: Scout ', function ()
         assert.equals(search_bar.host_window, first_win)
         func_helpers:make_new_tab()
         local second_win = vim.api.nvim_get_current_win()
-        assert.equals(search_bar.host_window, second_win)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, second_win)
 
         func_helpers:make_new_tab()
         local third_win = vim.api.nvim_get_current_win()
-        assert.equals(search_bar.host_window, third_win)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, third_win)
         utils:emulate_user_keypress('gt')
-        assert.equals(search_bar.host_window, first_win)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, first_win)
         utils:emulate_user_keypress('gt')
-        assert.equals(search_bar.host_window, second_win)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, second_win)
         utils:emulate_user_keypress('gt')
-        assert.equals(search_bar.host_window, third_win)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, third_win)
 
         utils:emulate_user_keypress('gT')
-        assert.equals(search_bar.host_window, second_win)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, second_win)
         utils:emulate_user_keypress('gT')
-        assert.equals(search_bar.host_window, first_win)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, first_win)
         utils:emulate_user_keypress('gT')
-        assert.equals(search_bar.host_window, third_win)
+        utils:async_asserts(consts.test.async_delay, async_host_windows_assert, scout.search_bar, third_win)
         search_bar:close()
 
         assert.is_not(search_bar:is_open())
@@ -253,24 +281,19 @@ describe('Functional: Scout ', function ()
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(keymap_defaults.toggle_focus)
         vim.cmd('vs') -- split the buffer views
-
         host_window_width = vim.api.nvim_win_get_width(search_bar.host_window)
         search_config = scout.search_bar.query_win_config
-        local expected_width = math.floor(host_window_width * search_bar.width_percent)
-        assert.equals(search_config.width, expected_width)
-        assert.equals(search_config.col, search_bar:get_search_bar_col(search_bar.host_window, expected_width) )
+        utils:async_asserts(consts.test.async_delay, async_width_assert, search_bar, search_config)
 
         func_helpers:move_windows(win_direct.RIGHT)
         host_window_width = vim.api.nvim_win_get_width(search_bar.host_window)
         search_config = scout.search_bar.query_win_config
-        expected_width = math.floor(host_window_width * search_bar.width_percent)
-        assert.equals(search_config.col, search_bar:get_search_bar_col(search_bar.host_window, expected_width))
+        utils:async_asserts(consts.test.async_delay, async_width_assert, search_bar, search_config)
 
         func_helpers:move_windows(win_direct.LEFT)
         host_window_width = vim.api.nvim_win_get_width(search_bar.host_window)
         search_config = scout.search_bar.query_win_config
-        expected_width = math.floor(host_window_width * search_bar.width_percent)
-        assert.equals(search_config.col, search_bar:get_search_bar_col(search_bar.host_window, expected_width))
+        utils:async_asserts(consts.test.async_delay, async_width_assert, search_bar, search_config)
      end)
 
 end)

@@ -132,6 +132,7 @@ describe("Search bar", function()
     end)
 
     it('gets the first result of the buffer only', function ()
+        search_bar:open()
         assert.equals("first", search_bar:get_window_contents())
     end)
 
