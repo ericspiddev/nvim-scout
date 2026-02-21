@@ -65,15 +65,7 @@ function M.force_search_window(ev)
     if vim.api.nvim_get_current_win() == M.search_bar.win_id then
         if M.search_bar.query_buffer and M.search_bar.query_buffer ~= consts.buffer.INVALID_BUFFER and ev.buf ~= M.search_bar.query_buffer then
             vim.api.nvim_win_set_buf(M.search_bar.win_id, M.search_bar.query_buffer) -- FIX ME: we need to close the buffer that was attempted to be opened?
-
-            vim.api.nvim_win_call(M.search_bar.host_window, function()
-                if ev.file ~= "" then
-                    vim.api.nvim_win_set_buf(M.search_bar.host_window, ev.buf) -- FIX ME: we need to close the buffer that was attempted to be opened?
-                else
-                    vim.cmd("tabnew") -- oh boy...really need to fix this
-                end
-            end)
-
+            vim.api.nvim_win_set_buf(M.search_bar.host_window, ev.buf)
         end
     end
 end
@@ -118,21 +110,24 @@ function M.main(keymap_conf)
         callback = M.scout_graceful_close
     })
 
-    vim.api.nvim_create_autocmd({consts.events.TAB_ENTER_EVENT, consts.events.WINDOW_ENTER_EVENT}, {
+    vim.api.nvim_create_autocmd({consts.events.WINDOW_ENTER_EVENT, consts.events.TAB_ENTER_EVENT}, {
         callback = function(ev)
+            --vim.print("Object is " .. vim.inspect(ev) )
+
+        vim.schedule(function()
             local new_window = vim.api.nvim_get_current_win()
             local config = vim.api.nvim_win_get_config(new_window)
             local buffer_type = vim.api.nvim_get_option_value("buftype", {buf = vim.api.nvim_get_current_buf()})
 
-            if config.relative ~= "" or not M.search_bar:is_open() then
+            if not M.search_bar:is_open() or config.relative ~= "" then
                 return
             end
 
-            if buffer_type == "nofile" and not vim.api.nvim_buf_get_name(0):find(consts.search.search_name) and ev.event == "WinEnter" then
+            if buffer_type == "nofile" and ev.event == "WinEnter" then
                 return
             end
 
-            if (ev.event == consts.events.TAB_ENTER_EVENT) or (new_window ~= M.search_bar.win_id and new_window ~= M.search_bar.host_window) then
+            if (new_window ~= M.search_bar.win_id and new_window ~= M.search_bar.host_window) then
                 local contents = M.search_bar:get_window_contents()
                 M.search_bar:close()
                 if M.search_bar.was_last_focused then -- there's likely a better way to handle this...?
@@ -141,7 +136,8 @@ function M.main(keymap_conf)
                     M.search_bar:open(false, false) -- do not enter insert mode and do not focus the window
                 end
                 M.search_bar:set_window_contents(contents)
-            end
+                end
+            end)
         end
     })
     vim.keymap.set('n', keymap_conf.toggle_search, M.toggle, {}) -- likely change for obvious reasons later

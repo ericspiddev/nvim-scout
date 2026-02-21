@@ -84,7 +84,9 @@ end
 --- search bar window (currently hardcoded to the first line)
 ---
 function scout_search_bar:get_window_contents()
-    return vim.api.nvim_buf_get_lines(self.query_buffer, 0, 1, true)[1]
+    if self.query_buffer ~= consts.buffer.INVALID_BUFFER then
+        return vim.api.nvim_buf_get_lines(self.query_buffer, 0, 1, true)[1]
+    end
 end
 
 -------------------------------------------------------------
