@@ -30,6 +30,35 @@ local async_width_assert = function (...)
     assert.equals(search_config.col, search_bar:get_search_bar_col(search_bar.host_window, expected_width))
 end
 
+local async_new_tab_assert = function (...)
+    local search_bar, first_host = ...
+    local host_window = search_bar.host_window
+    local win_buf = vim.api.nvim_win_get_buf(host_window)
+    local buf_name = vim.api.nvim_buf_get_name(win_buf)
+    assert.is_not.equal(first_host, search_bar.host_window)
+    assert.equals(buf_name, "") -- new tabs should be empty name
+    assert.equals(vim.api.nvim_get_current_win(), search_bar.win_id)
+end
+
+local async_split_window_assert = function (...)
+    local search_bar, old_window, new_buffer = ...
+    local host_window = search_bar.host_window
+    local win_buf = vim.api.nvim_win_get_buf(host_window)
+    local buf_name = vim.api.nvim_buf_get_name(win_buf)
+    assert.is_not.equal(old_window, search_bar.host_window)
+    assert(string.find(buf_name, new_buffer))
+    assert.equals(vim.api.nvim_get_current_win(), search_bar.win_id)
+end
+
+local async_new_buffer_on_scout = function (...)
+    local search_bar, expected_query_buffer, new_buffer = ...
+    local win_buf = vim.api.nvim_win_get_buf(search_bar.host_window)
+    local buf_name = vim.api.nvim_buf_get_name(win_buf)
+    assert.equals(search_bar.query_buffer, expected_query_buffer)
+    assert(string.find(buf_name, new_buffer))
+    assert.equals(vim.api.nvim_get_current_win(), search_bar.win_id)
+end
+
 describe('Functional: Scout ', function ()
 
     function test_global_keymaps(toggle_key, focus_key, scout)
@@ -295,6 +324,70 @@ describe('Functional: Scout ', function ()
         search_config = scout.search_bar.query_win_config
         utils:async_asserts(consts.test.async_delay, async_width_assert, search_bar, search_config)
      end)
+
+    it('attaches to the new tab when scout is focused', function ()
+        scout.setup()
+        local search_bar = scout.search_bar
+        search_bar:open()
+        local current_host = search_bar.host_window
+        func_helpers:make_new_tab()
+        utils:async_asserts(consts.test.async_delay, async_new_tab_assert, search_bar, current_host)
+
+        current_host = search_bar.host_window
+        func_helpers:make_new_tab()
+        utils:async_asserts(consts.test.async_delay, async_new_tab_assert, search_bar, current_host)
+
+        current_host = search_bar.host_window
+        func_helpers:make_new_tab()
+        utils:async_asserts(consts.test.async_delay, async_new_tab_assert, search_bar, current_host)
+
+        current_host = search_bar.host_window
+        func_helpers:make_new_tab()
+        utils:async_asserts(consts.test.async_delay, async_new_tab_assert, search_bar, current_host)
+    end)
+
+    it('attaches to the new split window when scout is focused', function ()
+        local test_buf = "c_buffer.c"
+        func_helpers:close_all_tabs_and_open_buffer(test_buf)
+        scout.setup()
+        local search_bar = scout.search_bar
+        local host_window = scout.host_window
+        search_bar:open()
+        test_buf = "lua_buffer.lua"
+        spec_utils:split_test_buffer(test_buf)
+        utils:async_asserts(consts.test.async_delay, async_split_window_assert,search_bar, host_window, test_buf)
+
+        host_window = scout.host_window
+        test_buf = "js_buffer.js"
+        spec_utils:split_test_buffer(test_buf)
+        utils:async_asserts(consts.test.async_delay, async_split_window_assert,search_bar, host_window, test_buf)
+
+        host_window = scout.host_window
+        test_buf = "c_buffer.c"
+        spec_utils:split_test_buffer(test_buf)
+        utils:async_asserts(consts.test.async_delay, async_split_window_assert,search_bar, host_window, test_buf)
+    end)
+
+    it('opens a new buffer in the host window when scout is focused and a buffer change is attempted', function ()
+        scout.setup()
+        local search_bar = scout.search_bar
+        local test_buf = "c_buffer.c"
+        utils:open_test_buffer(test_buf)
+        search_bar:open()
+        local query_buf = search_bar.query_buffer -- assert this doesn't change
+
+        test_buf = "js_buffer.js"
+        utils:open_test_buffer(test_buf)
+        utils:async_asserts(consts.test.async_delay, async_new_buffer_on_scout, search_bar, query_buf, test_buf)
+
+        test_buf = "lua_buffer.lua"
+        utils:open_test_buffer(test_buf)
+        utils:async_asserts(consts.test.async_delay, async_new_buffer_on_scout, search_bar, query_buf, test_buf)
+
+        test_buf = "lorem_buf.txt"
+        utils:open_test_buffer(test_buf)
+        utils:async_asserts(consts.test.async_delay, async_new_buffer_on_scout, search_bar, query_buf, test_buf)
+    end)
 
 end)
 
