@@ -104,7 +104,7 @@ function scout_highlighter:highlight_file_by_pattern(win_buf, pattern)
         return
     end
 
-    local exact_match = self.mode_mgr:apply_regex_mode()
+    local exact_match = self.mode_mgr:apply_lua_pattern_mode()
     local pattern_match = not exact_match
 
     if pattern_match then

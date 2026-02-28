@@ -100,7 +100,7 @@ function scout_mode_manager:apply_match_case(line, pattern)
     return line, pattern
 end
 
-function scout_mode_manager:apply_regex_mode()
+function scout_mode_manager:apply_lua_pattern_mode()
     -- when set to false pattern matching is used when set to true only exact matches are shown...
     return not self:get_mode_status(consts.modes.lua_pattern)
 end

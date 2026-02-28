@@ -155,9 +155,9 @@ describe('Mode manager', function ()
     it('applies regex mode properly', function ()
         -- just a boolean we pass to `string.find` telling it to use pattern matching or not
         local manager = create_mode_manager()
-        assert(manager:apply_regex_mode())
+        assert(manager:apply_lua_pattern_mode())
         manager:toggle_mode(REGEX_MODE)
-        assert.equals(manager:apply_regex_mode(), false)
+        assert.equals(manager:apply_lua_pattern_mode(), false)
     end)
 
     it('applies match case mode properly', function ()
