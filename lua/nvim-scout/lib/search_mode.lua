@@ -2,7 +2,7 @@ scout_search_mode = {}
 local consts = require("nvim-scout.lib.consts")
 
 scout_search_mode.__index = scout_search_mode
-function scout_search_mode:new(mode_name, mode_symbol, ns, mode_color)
+function scout_search_mode:new(mode_name, mode_symbol, ns, mode_hl)
 
     local obj = {
         name = mode_name,
@@ -13,21 +13,16 @@ function scout_search_mode:new(mode_name, mode_symbol, ns, mode_color)
         display_col = 0,
         active = false,
         namespace = ns,
-        hl_name = mode_name and mode_name:gsub("%s+", "") or ""
+        hl_name = mode_hl,
     }
-    create_mode_highlight(ns, obj.hl_name, mode_color)
     return setmetatable(obj, self)
 end
-function create_mode_highlight(ns, mode_name, mode_color)
-    if mode_color ~= nil and ns ~= nil and mode_name ~= "" then
-        vim.api.nvim_set_hl(ns, mode_name, {fg = mode_color, italic= true, force = true})
-    else
-        Scout_Logger:error_print("Nil argument passed to create_mode_highlight unable to for mode: ", mode_name)
-    end
-end
+
 function scout_search_mode:show_banner(display_col)
 
     if self.banner_window_id == consts.window.INVALID_WINDOW_ID and self.search_bar_win ~= consts.window.INVALID_WINDOW_ID then
+        local banner_border = Scout_Theme:get_window_border(self.name)
+        self.border_hl = banner_border[1][2]
         local banner_config = {
             relative='win',
             row=2,
@@ -35,9 +30,9 @@ function scout_search_mode:show_banner(display_col)
             zindex=1,
             width=#self.name + consts.modes.padding_space,
             height=1,
-            border = get_mode_banner_border("constant"),
+            border = banner_border,
             focusable=false,
-            footer="mod",
+            footer={{"mod", consts.colorscheme_groups.m_virt_text_c}},
             style="minimal",
             win=self.search_bar_win,
         }
@@ -54,21 +49,17 @@ function scout_search_mode:show_banner(display_col)
     end
 end
 
-function get_mode_banner_border(hl_group)
-    return{
-        {"┌", hl_group},
-        {"─", hl_group},
-        {"┐", hl_group},
-        {"│", hl_group},
-        {"┘", hl_group},
-        {"─", hl_group},
-        {"└", hl_group},
-        {"│", hl_group}
-    }
-end
-
 function scout_search_mode:get_banner_display_width()
     return  #self.name + consts.modes.padding_space
+end
+
+function scout_search_mode:get_extra_padding()
+    local has_bg_color = vim.api.nvim_get_hl(self.namespace, {name = self.border_hl}).bg
+    if has_bg_color then
+        return consts.modes.padding_space + 1
+    else
+        return consts.modes.padding_space
+    end
 end
 
 function scout_search_mode:hide_banner()

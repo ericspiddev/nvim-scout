@@ -152,7 +152,6 @@ describe('Config Parser', function ()
 
         search_bar_or = {
            size = sizes.FULL,
-           theme = 50
         }
         local tog_or = "a"
         local foc_or = "b"
@@ -177,11 +176,19 @@ describe('Config Parser', function ()
             case_sensitive_toggle = cs_or,
             pattern_toggle = pat_or,
         }
+
+        theme_or = {
+            border_type = 4,
+            colorscheme = "onedark"
+        }
         options = {
             keymaps = keymap_or,
             search = search_bar_or,
             logging = logging_or,
+            theme = theme_or
         }
+
+
         local p = parser:new(options)
         local conf = p:parse_config()
         conf.search.size = width_to_size(conf.search.size)

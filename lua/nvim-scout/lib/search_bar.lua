@@ -14,18 +14,18 @@ scout_search_bar.VALID_WINDOW_EVENTS = {"on_lines", "on_bytes", "on_changedtick"
 scout_search_bar.MIN_WIDTH = 0.10
 scout_search_bar.MAX_WIDTH = 1
 
-function scout_search_bar:new(window_config, scout_config)
+function scout_search_bar:new(window_config, scout_config, scout_namespace)
     local current_editing_win = vim.api.nvim_get_current_win()
-    local namespace = vim.api.nvim_create_namespace(consts.highlight.SCOUT_NAMESPACE)
-    local mode_mgr = mode_manager:new(create_search_bar_modes(namespace))
+    local mode_mgr = mode_manager:new(create_search_bar_modes(scout_namespace))
     local obj = {
         query_buffer = consts.buffer.INVALID_BUFFER,
+        namespace = scout_namespace,
         query_win_config = window_config,
         width_percent = scout_config.search.size,
         should_enter = true,
         send_buffer = false, -- unused since we use lua cbs
         mode_manager = mode_mgr,
-        highlighter = highlighter:new(current_editing_win, consts.highlight.MATCH_HIGHLIGHT, consts.highlight.CURR_MATCH_HIGHLIGHT, namespace, mode_mgr),
+        highlighter = highlighter:new(current_editing_win, consts.highlight.MATCH_HIGHLIGHT, consts.highlight.CURR_MATCH_HIGHLIGHT, scout_namespace, mode_mgr),
         search_events = nil,
         history = history:new(consts.history.MAX_ENTRIES),
         win_id = consts.window.INVALID_WINDOW_ID,
@@ -38,8 +38,8 @@ end
 
 function create_search_bar_modes(namespace_id)
     local search_modes = {}
-    search_modes[consts.modes.lua_pattern] = search_mode:new("Lua Pattern", "P", namespace_id, consts.modes.pattern_color)
-    search_modes[consts.modes.case_sensitive] = search_mode:new("Match Case", "C", namespace_id, consts.modes.case_sensitive_color)
+    search_modes[consts.modes.lua_pattern] = search_mode:new("Lua Pattern", "P", namespace_id, consts.colorscheme_groups.m_pat_title_c)
+    search_modes[consts.modes.case_sensitive] = search_mode:new("Match Case", "C", namespace_id, consts.colorscheme_groups.m_case_title_c)
     return search_modes
 end
 
@@ -210,6 +210,7 @@ function scout_search_bar:open(enter_insert, focus_search)
         else
             vim.cmd('normal 0') -- hack to go back to normal mode
         end
+        vim.api.nvim_win_set_hl_ns(self.win_id, self.namespace)
         keymap_mgr:setup_scout_keymaps()
     else
         Scout_Logger:debug_print("Attempted to open an already open window ignoring...")

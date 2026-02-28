@@ -188,8 +188,8 @@ end
 
 function spec_utils:get_supported_modes(namespace_id)
     local search_modes = {}
-    search_modes[consts.modes.lua_pattern] = search_mode:new("Lua Pattern", "P", namespace_id, consts.modes.pattern_color)
-    search_modes[consts.modes.case_sensitive] = search_mode:new("Match Case", "C", namespace_id, consts.modes.case_sensitive_color)
+    search_modes[consts.modes.lua_pattern] = search_mode:new("Lua Pattern", "P", namespace_id, consts.colorscheme_groups.m_pat_title_c)
+    search_modes[consts.modes.case_sensitive] = search_mode:new("Match Case", "C", namespace_id, consts.colorscheme_groups.m_case_title_c)
     return search_modes
 end
 

@@ -44,7 +44,9 @@
         BACKWARD = -1,
         search_name = "[SCOUT]",
         max_results = 10001,
-        virt_text_hl = "Comment"
+        virt_text_hl = "Comment",
+        search_top_text = "Search",
+        default_scheme = "default"
      },
      lines = {
          START = 0,
@@ -73,6 +75,17 @@
          xl = 0.50,
          full = 1.0
      },
+     colorscheme_groups = {
+        s_border_c = "search_border_color",
+        s_title_c = "search_title_color",
+        m_case_title_c = "mode_case_title_color",
+        m_case_border_c = "mode_case_border_color",
+        m_pat_title_c = "mode_pat_title_color",
+        m_pat_border_c = "mode_pat_border_color",
+        m_virt_text_c = "mode_virt_text_color",
+        search_result = "scout_g_search_result",
+        selected_result = "scout_g_selected_result",
+     }
  }
 
  return constants

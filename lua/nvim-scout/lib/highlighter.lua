@@ -226,7 +226,7 @@ function scout_highlighter:highlight_pattern_in_line(line_number, word_start, wo
 
     if word_start < word_end then
         local extmark_id = self.hl_fns.highlight(self.hl_buf, self.hl_namespace, line_number, word_start,
-            { end_col = word_end, hl_group = self.result_hl_style })
+            { end_col = word_end, hl_group = consts.colorscheme_groups.search_result })
         table.insert(self.matches, match_obj:new(line_number + 1, word_start, word_end, extmark_id))
     end
 end
@@ -254,18 +254,17 @@ function scout_highlighter:move_cursor(index, host_window)
 
     if self.hl_win ~= host_window then
         Scout_Logger:warning_print("Window id holding buffer and stored highlight window mismatch!")
-        Scout_Logger:warning_print("Expected to move cursor for window ", buf_window)
         Scout_Logger:warning_print("Actually moving through ", self.hl_win)
     end
 
-    self:set_match_highlighting(self.matches[self.match_index], self.result_hl_style)
+    self:set_match_highlighting(self.matches[self.match_index], consts.colorscheme_groups.search_result)
     self.match_index = index
 
     local match = self.matches[self.match_index]
 
     self.hl_fns.remove_highlight(self.hl_buf, self.hl_namespace, match.extmark_id)
     vim.api.nvim_win_set_cursor(self.hl_win, {match:get_cursor_row(), match.m_start})
-    self:set_match_highlighting(match, self.selected_hl_style)
+    self:set_match_highlighting(match, consts.colorscheme_groups.selected_result)
     vim.api.nvim_buf_call(self.hl_buf, function () vim.cmd(consts.cmds.CENTER_SCREEN) end)
     return true
 end

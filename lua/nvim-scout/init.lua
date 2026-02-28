@@ -1,11 +1,16 @@
 local search_bar = require("nvim-scout.lib.search_bar")
 local consts = require("nvim-scout.lib.consts")
 local config_parser = require("nvim-scout.lib.config_parser")
+local theme_parser = require("nvim-scout.lib.theme_parser")
 local M = {}
 
 function M.setup(user_options)
     local scout_config = config_parser:new(user_options):parse_config() -- hmm think about how to use logger maybe print directly?
+    local scout_namespace = vim.api.nvim_create_namespace(consts.highlight.SCOUT_NAMESPACE)
     _G.Scout_Logger = require("nvim-scout.lib.scout_logger"):new(scout_config.logging, vim.print, vim.notify)
+    _G.Scout_Colorscheme = require("nvim-scout.themes.colorscheme"):init(scout_namespace)
+    Scout_Colorscheme.schemes = {}
+    _G.Scout_Theme = theme_parser:new(scout_config.theme)
     local search_bar_config = {
         relative='editor',
         row=0,
@@ -13,13 +18,12 @@ function M.setup(user_options)
         focusable=true,
         height=1,
         style="minimal",
-        border={ "╔", "═","╗", "║", "╝", "═", "╚", "║" }, -- double border for now fix me later
+        border=Scout_Theme:get_window_border("searchbar"),
         title_pos="center",
-        title="Search"
+        title=Scout_Theme:get_searchbar_title()
     }
-    --Scout_Logger:debug_print("window: making a new window with config ", search_bar_config)
 
-    M.search_bar = search_bar:new(search_bar_config, scout_config)
+    M.search_bar = search_bar:new(search_bar_config, scout_config, scout_namespace)
     M.main(scout_config.keymaps)
 end
 

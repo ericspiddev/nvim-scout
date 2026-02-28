@@ -27,21 +27,21 @@ function scout_mode_manager:toggle_mode(mode_index)
         Scout_Logger:error_print("Cannot toggle mode")
         return
     end
-    local target_mode_status = self.modes[mode_index] -- validated so should be ok to just use here
-    if target_mode_status.active then
-        if target_mode_status:hide_banner() then
-            local potential_col = target_mode_status.display_col
-            target_mode_status.display_col = 0
+    local target_mode = self.modes[mode_index] -- validated so should be ok to just use here
+    if target_mode.active then
+        if target_mode:hide_banner() then
+            local potential_col = target_mode.display_col
+            target_mode.display_col = 0
             if potential_col < self.next_banner_col then
                 self.next_banner_col = potential_col
             end
         end
     else
-        if target_mode_status:show_banner(self.next_banner_col) then
-            self.next_banner_col = self.next_banner_col + target_mode_status:get_banner_display_width() + consts.modes.banner_gap
+        if target_mode:show_banner(self.next_banner_col) then
+            self.next_banner_col = self.next_banner_col + target_mode:get_banner_display_width() + target_mode:get_extra_padding()
         end
     end
-    target_mode_status.active = not target_mode_status.active
+    target_mode.active = not target_mode.active
 end
 
 function scout_mode_manager:set_mode(mode, value)

@@ -43,7 +43,7 @@ local async_extmark_assert = function (...)
         assert.equals(match:get_highlight_row(), row)
         assert.equals(match.m_start, col)
         assert.equals(match.m_end, details.end_col)
-        assert.equals(consts.highlight.MATCH_HIGHLIGHT, details.hl_group)
+        assert.equals(consts.colorscheme_groups.search_result, details.hl_group)
     end
     -- iterate over matches and
 end
@@ -55,9 +55,9 @@ local async_check_selected_hl = function(...)
     for index, extmark in ipairs(extmarks) do
         local details = extmark[4]
         if index == selected_match then
-            assert.equals(consts.highlight.CURR_MATCH_HIGHLIGHT, details.hl_group)
+            assert.equals(consts.colorscheme_groups.selected_result, details.hl_group)
         else
-            assert.equals(consts.highlight.MATCH_HIGHLIGHT, details.hl_group)
+            assert.equals(consts.colorscheme_groups.search_result, details.hl_group)
         end
     end
 

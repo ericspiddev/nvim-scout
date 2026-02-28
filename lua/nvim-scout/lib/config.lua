@@ -6,7 +6,6 @@ logging_defaults = {
 
 search_bar_defaults = {
    size = config_options.scout_sizes.MED,
-   theme = config_options.scout_themes.DEFAULT
 }
 
 keymap_defaults = {
@@ -22,12 +21,18 @@ keymap_defaults = {
     pattern_toggle = '<leader>r',
 }
 
+theme_defaults = {
+    border_type = config_options.border_types.ROUNDED,
+    colorscheme = "default"
+}
+
 local config = {
 
 defaults = {
     keymaps = keymap_defaults,
     search = search_bar_defaults,
     logging = logging_defaults,
+    theme = theme_defaults,
 }
 
 }
