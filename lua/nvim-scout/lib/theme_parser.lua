@@ -58,6 +58,7 @@ function scout_theme_parser:apply_colorscheme(border, name)
             table.insert(border_colors, {piece, colorscheme_groups.m_pat_border_c})
         end
     end
+
     return border_colors
 end
 

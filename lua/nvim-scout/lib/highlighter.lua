@@ -4,14 +4,12 @@ local consts = require("nvim-scout.lib.consts")
 local match_obj = require("nvim-scout.lib.match")
 local pattern_handler = require("nvim-scout.lib.pattern_handler"):new(consts.modes.escape_chars)
 
-function scout_highlighter:new(editor_window, result_hl_style, selected_hl_style, hl_namespace, mode_mgr)
+function scout_highlighter:new(hl_namespace, mode_mgr)
     local obj = {
-        hl_buf = vim.api.nvim_win_get_buf(editor_window),
-        hl_win = editor_window,
+        hl_buf = -1, -- vim.api.nvim_win_get_buf(editor_window),
+        hl_win = -1,-- editor_window,
         hl_context = consts.buffer.NO_CONTEXT,
         hl_namespace = hl_namespace,
-        result_hl_style = result_hl_style,
-        selected_hl_style = selected_hl_style,
         hl_fns = self:get_hl_fns(),
         hl_wc_ext_id = consts.highlight.NO_WORD_COUNT_EXTMARK,
         matches = {},
@@ -50,6 +48,7 @@ end
 ---
 function scout_highlighter:update_hl_context(hl_buf, scout_buf, hl_win)
     self:clear_match_count(scout_buf)
+    self.match_buf = scout_buf
     return self:populate_hl_context(hl_buf, hl_win)
 end
 
@@ -93,7 +92,7 @@ end
 --- @win_buf: the buffer to update the search results ex (3/5) in
 --- @pattern: the pattern to highlight within the hl_context
 ---
-function scout_highlighter:highlight_file_by_pattern(win_buf, pattern)
+function scout_highlighter:highlight_file_by_pattern(pattern)
 
     if pattern == nil or pattern == "" then
         Scout_Logger:warning_print("Nil or empty pattern cancelling search")
@@ -117,7 +116,7 @@ function scout_highlighter:highlight_file_by_pattern(win_buf, pattern)
         line, pattern = self.mode_mgr:apply_modes_to_search_text(line, pattern)
 
         local run_time = os.clock() - start_time
-        local success, pattern_start, pattern_end = self:protected_search(line, pattern, 1, exact_match, win_buf)
+        local success, pattern_start, pattern_end = self:protected_search(line, pattern, 1, true, self.match_buf)
 
         if not success then
             return
@@ -126,7 +125,7 @@ function scout_highlighter:highlight_file_by_pattern(win_buf, pattern)
              -- highlight with start index and end index
             self:highlight_pattern_in_line(line_number - 1, pattern_start - 1, pattern_end)
             search_index = pattern_end + 1
-            success, pattern_start, pattern_end = self:protected_search(line, pattern, search_index, exact_match, win_buf)
+            success, pattern_start, pattern_end = self:protected_search(line, pattern, search_index, true, self.match_buf)
 
             if not success then
                 return
@@ -145,7 +144,7 @@ function scout_highlighter:highlight_file_by_pattern(win_buf, pattern)
             if run_time >= 1 then
                 Scout_Logger:error_print("Current search exceeded max search time of 1 second pattern: ", pattern)
                 Scout_Logger:error_print("You should make your pattern searches as specific as possible as they can lead to quadratic time searches")
-                self:clear_highlights(self.hl_buf, win_buf)
+                self:clear_highlights()
                 return
             end
             run_time = os.clock() - start_time
@@ -153,9 +152,9 @@ function scout_highlighter:highlight_file_by_pattern(win_buf, pattern)
     end
 
     if #self.matches > 0 then
-        self:update_match_count(win_buf)
+        self:update_match_count(self.match_buf)
     else
-        self:set_search_bar_hint_text(win_buf, consts.virt_text.no_matches)
+        self:set_search_bar_hint_text(self.match_buf, consts.virt_text.no_matches)
     end
 end
 
@@ -225,6 +224,7 @@ end
 function scout_highlighter:highlight_pattern_in_line(line_number, word_start, word_end)
 
     if word_start < word_end then
+        vim.print("HNl id is " .. self.hl_namespace)
         local extmark_id = self.hl_fns.highlight(self.hl_buf, self.hl_namespace, line_number, word_start,
             { end_col = word_end, hl_group = consts.colorscheme_groups.search_result })
         table.insert(self.matches, match_obj:new(line_number + 1, word_start, word_end, extmark_id))
@@ -249,6 +249,11 @@ function scout_highlighter:move_cursor(index, host_window)
 
     if self.hl_win == consts.window.INVALID_WINDOW_ID then
         Scout_Logger:error_print("Invalid window id to move cursor through" )
+        return
+    end
+
+    if not host_window then
+        Scout_Logger:error_print("Attempted to move cursor for nil host window")
         return
     end
 
@@ -362,13 +367,16 @@ end
 --- @hl_buf: buffer that is currently being searched (likely shown in current window)
 --- @win_buf: query buffer that holds the match count e.x. (3/5)
 ---
-function scout_highlighter:clear_highlights(hl_buf, win_buf)
-    self:clear_match_count(win_buf)
-    if self:get_buffer_current_hls(hl_buf) then
-        for _, match_id in ipairs(self:get_buffer_current_hls(hl_buf)) do
+function scout_highlighter:clear_highlights()
+    self:clear_match_count(self.match_buf)
+    local hls = self:get_buffer_current_hls(self.hl_buf)
+    if hls then
+        for _, match_id in ipairs(hls) do
             self.hl_fns.remove_highlight(self.hl_buf, self.hl_namespace, match_id)
         end
     end
+    self.match_index = 1
+    self.matches = {}
 end
 
 return scout_highlighter

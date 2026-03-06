@@ -3,19 +3,34 @@ local consts = require("nvim-scout.lib.consts")
 
 scout_search_mode.__index = scout_search_mode
 function scout_search_mode:new(mode_name, mode_symbol, ns, mode_hl)
-
     local obj = {
         name = mode_name,
         symbol = mode_symbol,
-        banner_window_id = consts.window.INVALID_WINDOW_ID,
-        banner_buf = consts.buffer.INVALID_BUFFER,
         search_bar_win = consts.window.INVALID_WINDOW_ID,
         display_col = 0,
+        banner_config = {
+            relative='win',
+            row=2,
+            zindex=1,
+            width=#mode_name + consts.modes.padding_space,
+            height=1,
+            border = {},
+            focusable=false,
+            footer={{consts.modes.footer_text, consts.colorscheme_groups.m_virt_text_c}},
+            style="minimal",
+        },
         active = false,
         namespace = ns,
         hl_name = mode_hl,
     }
     return setmetatable(obj, self)
+end
+
+function scout_search_mode:update_banner_config(border, display_col, search_bar_window)
+    self.banner_config["border"] = border
+    self.banner_config["col"] = display_col
+    self.banner_config["win"] = search_bar_window
+    return self.banner_config
 end
 
 function scout_search_mode:show_banner(display_col)
@@ -38,8 +53,6 @@ function scout_search_mode:show_banner(display_col)
         }
         self.display_col = display_col
 
-        self.banner_buf = vim.api.nvim_create_buf(false, true)
-        self.banner_window_id = vim.api.nvim_open_win(self.banner_buf, false, banner_config)
         vim.api.nvim_win_set_hl_ns(self.banner_window_id, self.namespace)
         vim.api.nvim_buf_set_lines(self.banner_buf, 0, 1, true, {" " .. self.name .." "})
         vim.api.nvim_buf_set_extmark(self.banner_buf, self.namespace, 0, 1, { end_col = #self.name + consts.modes.padding_space - 1, hl_group = self.hl_name})
