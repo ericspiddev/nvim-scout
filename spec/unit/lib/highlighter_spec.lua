@@ -2,7 +2,7 @@ local highlight = require('nvim-scout.lib.highlighter')
 local stub = require('luassert.stub')
 local utils = require('spec.spec_utils')
 local consts = require('nvim-scout.lib.consts')
-local mode_manager = require('nvim-scout.lib.mode_manager')
+local mode_manager = require('spec.mocks.mode_manager_mock')
 local match_object = require('nvim-scout.lib.match')
 local assert_match = require('luassert.match')
 utils:register_global_logger()
@@ -43,21 +43,19 @@ function string_to_matches(line, pattern, row, ignore_case, regex)
     return matches
 end
 
-function create_new_highlighter(window_id, result_style, selected_style, ns_id, mode_mgr)
-    window_id = window_id or 0
-    result_style = result_style or "matched_style"
-    selected_style = selected_style or "selected_style"
-    ns_id = ns_id or 0
-    mode_mgr = mode_mgr or mode_manager:new(utils:get_supported_modes(ns_id))
-
-    return highlight:new(window_id, result_style, selected_style, ns_id, mode_mgr)
+function create_new_highlighter()
+    local ns_id = 0
+    local mode_mgr = mode_manager:new()
+    local hl = highlight:new(ns_id, mode_mgr)
+    hl.hl_win = 1000
+    return hl
 end
 
 function move_cursor_asserts(hl, prev_match, curr_match, result_style, selected_style)
     assert.stub(vim.api.nvim_win_set_cursor).was.called_with(hl.hl_win, {curr_match.row, curr_match.m_start})
-    assert.stub(highlight.set_match_highlighting).was.called_with(assert_match.is_table(), prev_match, result_style) -- revert previous match to result style
+    assert.stub(highlight.set_match_highlighting).was.called_with(assert_match.is_table(), prev_match, consts.colorscheme_groups.search_result) -- revert previous match to result style
     assert.stub(vim.api.nvim_buf_del_extmark).was.called_with(hl.hl_buf, hl.hl_namespace, curr_match.extmark_id) -- remove current match style from new selection
-    assert.stub(highlight.set_match_highlighting).was.called_with(assert_match.is_table(), curr_match, selected_style) -- new match should now have selected style
+    assert.stub(highlight.set_match_highlighting).was.called_with(assert_match.is_table(), curr_match, consts.colorscheme_groups.selected_result) -- new match should now have selected style
 
     -- reset call chain for new calls
     vim.api.nvim_win_set_cursor:clear()
@@ -175,8 +173,8 @@ describe('highlighter', function ()
             match_object:new(0, 1, 2, 5), -- line, start, end, extmark_id
         }
         local hl_buf = 1
-        local win_buf = 2
-        hl:clear_highlights(hl_buf, win_buf)
+        hl.hl_buf = 1
+        hl:clear_highlights()
         assert.stub(vim.api.nvim_buf_del_extmark).was.called_with(hl_buf, hl.hl_namespace, 3)
         assert.stub(vim.api.nvim_buf_del_extmark).was.called_with(hl_buf, hl.hl_namespace, 12)
         assert.stub(vim.api.nvim_buf_del_extmark).was.called_with(hl_buf, hl.hl_namespace, 5)
@@ -219,53 +217,27 @@ describe('highlighter', function ()
 
     end)
 
-    it('can clear the match count', function ()
-        local test_buf = 15
-        stub(vim.api, "nvim_buf_is_valid").returns(false)
-        local hl = highlight:new(0, "style1", "style2")
-        hl:clear_match_count(nil)
-        assert.stub(vim.api.nvim_buf_del_extmark).was_not.called_with(nil, hl.hl_namespace, hl.hl_wc_ext_id)
-
-        hl.hl_wc_ext_id = consts.highlight.NO_WORD_COUNT_EXTMARK
-        hl:clear_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_del_extmark).was_not.called_with(nil, hl.hl_namespace, hl.hl_wc_ext_id)
-
-        hl.hl_wc_ext_id = 12
-        hl:clear_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_del_extmark).was_not.called_with(test_buf, hl.hl_namespace, hl.hl_wc_ext_id)
-
-        stub(vim.api, "nvim_buf_is_valid").returns(true)
-        hl = highlight:new(0, "style1", "style2")
-        hl.hl_wc_ext_id = 12
-        hl:clear_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_del_extmark).was.called_with(test_buf, hl.hl_namespace, 12)
-        assert.equals(consts.highlight.NO_WORD_COUNT_EXTMARK, hl.hl_wc_ext_id)
-    end)
-
-    it('properly updates match count virt text', function ()
+    it('returns the proper match text', function ()
         local test_buf = 51
-        local ext_mark_id = 101
-        stub(vim.api, "nvim_buf_set_extmark").returns(ext_mark_id)
-        local hl = highlight:new(0, "style1", "style2")
+        local hl = create_new_highlighter()
         hl.matches = nil
-        hl:update_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_set_extmark).was_not.called()
-
+        local ret = hl:get_current_match_text()
+        assert.equals(ret, "No Matches")
         hl.matches = {}
-        hl:update_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_set_extmark).was_not.called()
+        ret = hl:get_current_match_text()
+        assert.equals(ret, "No Matches")
 
         hl.matches = {match_object:new(0, 1, 2, 3)}
         hl.match_index = -1
-        hl:update_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_set_extmark).was_not.called()
+        ret = hl:get_current_match_text()
+        assert.equals(ret, "")
 
         hl.matches = {
             match_object:new(0, 1, 2, 3),
         }
         hl.match_index = 12
-        hl:update_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_set_extmark).was_not.called()
+        ret = hl:get_current_match_text()
+        assert.equals(ret, "")
 
         hl.matches = {
             match_object:new(0, 1, 2, 3),
@@ -275,18 +247,15 @@ describe('highlighter', function ()
             match_object:new(0, 1, 2, 3),
         }
         hl.match_index = 3
-        local ret = hl:update_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_set_extmark).was.called()
+        ret = hl:get_current_match_text()
         assert.equals(ret, "3/5")
-        assert.equals(hl.hl_wc_ext_id, ext_mark_id)
 
         hl.matches = {
             match_object:new(0, 1, 2, 3),
             match_object:new(0, 1, 2, 3),
         }
         hl.match_index = 0
-        local ret = hl:update_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_set_extmark).was.called()
+        ret = hl:get_current_match_text()
         assert.equals(ret, "0/2")
 
         hl.matches = {
@@ -294,8 +263,15 @@ describe('highlighter', function ()
             match_object:new(0, 1, 2, 3),
         }
         hl.match_index = 2
-        local ret = hl:update_match_count(test_buf)
-        assert.stub(vim.api.nvim_buf_set_extmark).was.called()
+        ret = hl:get_current_match_text()
+        assert.equals(ret, "2/2")
+
+        hl.invalid_pattern = true
+        ret = hl:get_current_match_text()
+        assert.equals(ret, "Invalid Pattern")
+
+        hl.invalid_pattern = false
+        ret = hl:get_current_match_text()
         assert.equals(ret, "2/2")
 
     end)
@@ -304,8 +280,9 @@ describe('highlighter', function ()
         local window_id = 0
         stub(vim.api, "nvim_buf_is_valid").returns(false)
         stub(vim.api, "nvim_win_set_cursor").returns()
+        stub(vim.api, "nvim_buf_call").returns()
         stub(vim, "cmd").returns()
-        local hl = highlight:new(window_id, "matched_style", "selected_style")
+        local hl = create_new_highlighter()
         hl.matches = {
             match_object:new(0, 1, 2, 3), -- line, start, end, extmark_id
             match_object:new(4, 5, 6, 7),
@@ -315,40 +292,45 @@ describe('highlighter', function ()
             match_object:new(11, 2, 3, 12),
             match_object:new(11, 2, 3, 12),
         }
+        local hl_win = 1010
+        hl.hl_win = hl_win
 
         hl.match_index = 1
         assert.equals(hl.match_index, 1)
-        hl:move_cursor(2)
+        hl:move_cursor(2, hl_win)
         assert.equals(hl.match_index, 2)
-        hl:move_cursor(3)
+        hl:move_cursor(3, hl_win)
         assert.equals(hl.match_index, 3)
-        hl:move_cursor(5)
+        hl:move_cursor(5, hl_win )
         assert.equals(hl.match_index, 5)
-        hl:move_cursor(3)
+        hl:move_cursor(3, hl_win)
         assert.equals(hl.match_index, 3)
-        hl:move_cursor(3)
-        hl:move_cursor(4)
+        hl:move_cursor(3, hl_win)
+        hl:move_cursor(4, hl_win)
         assert.equals(hl.match_index, 4)
 
         hl.match_index = 5 -- it does not update with invalid indices
-        hl:move_cursor(-1)
+        hl:move_cursor(-1, -1)
         assert.equals(hl.match_index, 5)
 
-        hl:move_cursor(-20)
+        hl:move_cursor(-20, -1)
         assert.equals(hl.match_index, 5)
 
-        hl:move_cursor(8)
+        hl:move_cursor(3, nil)
         assert.equals(hl.match_index, 5)
 
-        hl:move_cursor(100)
+        hl.hl_win = -1
+        hl:move_cursor(2, hl_win)
         assert.equals(hl.match_index, 5)
 
+        hl.hl_win = hl_win
         hl:move_cursor()
         assert.equals(hl.match_index, 5)
 
         vim.cmd:revert()
         vim.api.nvim_buf_is_valid:revert()
         vim.api.nvim_win_set_cursor:revert()
+        vim.api.nvim_buf_call:revert()
 
     end)
 
@@ -359,32 +341,34 @@ describe('highlighter', function ()
         stub(vim.api, "nvim_buf_is_valid").returns(false)
         stub(vim.api, "nvim_win_set_cursor").returns()
         stub(highlight, "set_match_highlighting").returns()
-        local hl = highlight:new(window_id, result_style, selected_style)
+        stub(vim.api, "nvim_buf_call").returns()
+        local hl = create_new_highlighter()
          hl.matches = {
             match_object:new(0, 1, 2, 3), -- line, start, end, extmark_id
             match_object:new(4, 5, 6, 7),
             match_object:new(11, 2, 3, 12),
          }
+        local host_window = 1000
         -- move forward
-        hl:move_cursor(2)
+        hl:move_cursor(2, host_window)
         local prev_match = hl.matches[1] -- starts at 1
         local curr_match = hl.matches[2]
         move_cursor_asserts(hl, prev_match, curr_match, result_style, selected_style )
 
         --move backward
-        hl:move_cursor(1)
+        hl:move_cursor(1, host_window)
         prev_match = hl.matches[2]
         curr_match = hl.matches[1]
         move_cursor_asserts(hl, prev_match, curr_match, result_style, selected_style )
 
         --move multiple spots forward
-        hl:move_cursor(3)
+        hl:move_cursor(3, host_window)
         prev_match = hl.matches[1]
         curr_match = hl.matches[3]
         move_cursor_asserts(hl, prev_match, curr_match, result_style, selected_style )
 
         --move multiple spots backward
-        hl:move_cursor(1)
+        hl:move_cursor(1, host_window)
         prev_match = hl.matches[3]
         curr_match = hl.matches[1]
         move_cursor_asserts(hl, prev_match, curr_match, result_style, selected_style)
@@ -603,13 +587,13 @@ describe('highlighter', function ()
 
     it('handles searches with no context or nil patterns', function ()
         local hl = create_new_highlighter()
-        hl:highlight_file_by_pattern(0, "test text")
+        hl:highlight_file_by_pattern("test text")
         assert.equals(#hl.matches, 0)
         hl.hl_context = "test text"
-        hl:highlight_file_by_pattern(0, nil)
+        hl:highlight_file_by_pattern(nil)
         assert.equals(#hl.matches, 0)
 
-        hl:highlight_file_by_pattern(0, "")
+        hl:highlight_file_by_pattern("")
         assert.equals(#hl.matches, 0)
 
     end)
@@ -626,7 +610,7 @@ describe('highlighter', function ()
         local check_index = 1
         local pattern = "string"
         local cmp_match = nil
-        hl:highlight_file_by_pattern(0, pattern)
+        hl:highlight_file_by_pattern(pattern)
         assert.equals(3, #hl.matches)
         cmp_match = string_to_matches(hl.hl_context[check_index], pattern, check_index)[1]
         assert(utils:compare_matches(hl.matches[check_index], cmp_match))
@@ -654,8 +638,10 @@ describe('highlighter', function ()
         local check_index = 1
         local pattern = "ERIC"
         local cmp_match = nil
-        hl:highlight_file_by_pattern(0, pattern)
-        hl.mode_mgr.modes[consts.modes.case_sensitive].active = false
+        hl.mode_mgr.match_case = false
+        hl.hl_buf = 0
+        hl:highlight_file_by_pattern(pattern)
+
         assert.equals(4, #hl.matches)
 
         cmp_match = string_to_matches(hl.hl_context[check_index], pattern, check_index, true)[1]
@@ -673,10 +659,10 @@ describe('highlighter', function ()
         cmp_match = string_to_matches(hl.hl_context[check_index], pattern, check_index, true)[1]
         assert(utils:compare_matches(hl.matches[check_index], cmp_match))
 
-        hl.mode_mgr.modes[consts.modes.case_sensitive].active = true
+        hl.mode_mgr.match_case = true
         pattern = "eric"
         hl.matches = {}
-        hl:highlight_file_by_pattern(0, pattern)
+        hl:highlight_file_by_pattern(pattern)
         assert.equals(1, #hl.matches)
         check_index = 1
         local match_line = 3
@@ -686,7 +672,7 @@ describe('highlighter', function ()
 
     end)
 
-    it('properly searches using regexes when enabled', function ()
+    it('properly searches using lua pattern when enabled', function ()
         local hl = create_new_highlighter()
 
         hl.hl_context = {
@@ -699,13 +685,13 @@ describe('highlighter', function ()
         local check_index = 1
         local pattern = "string.*"
         local cmp_match = nil
-        hl.mode_mgr.modes[consts.modes.lua_pattern].active = false
-        hl:highlight_file_by_pattern(0, pattern)
+        hl.mode_mgr.lua_pattern = false
+        hl:highlight_file_by_pattern(pattern)
         assert.equals(0, #hl.matches)
 
 
-        hl.mode_mgr.modes[consts.modes.lua_pattern].active = true
-        hl:highlight_file_by_pattern(0, pattern)
+        hl.mode_mgr.lua_pattern = true
+        hl:highlight_file_by_pattern(pattern)
         assert.equals(2, #hl.matches)
         cmp_match = string_to_matches(hl.hl_context[check_index], pattern, check_index, true, true)[1]
         assert(utils:compare_matches(hl.matches[check_index], cmp_match))
@@ -728,7 +714,7 @@ describe('highlighter', function ()
         local check_index = 1
         local pattern = "var"
 
-        hl:highlight_file_by_pattern(0, pattern)
+        hl:highlight_file_by_pattern(pattern)
         assert.equals(#hl.matches, 7)
         local cmp_matches = string_to_matches(hl.hl_context[row], pattern, row)
 
@@ -756,6 +742,27 @@ describe('highlighter', function ()
         assert(utils:compare_matches(hl.matches[5], cmp_matches[check_index]))
         assert.equals(string.sub(hl.hl_context[row], cmp_matches[check_index].m_start + 1, cmp_matches[check_index].m_end), pattern)
 
+    end)
+
+    it('sets when there is an invalid pattern', function ()
+        local hl = create_new_highlighter()
+        hl.hl_context = {
+            "invalid pattern test",
+            "testing strings",
+            "who knows where the wind blows",
+        }
+        hl.mode_mgr.lua_pattern = true
+        local pattern = "["
+        hl:highlight_file_by_pattern(pattern)
+        assert(hl.invalid_pattern)
+
+        pattern = "[e]"
+        hl:highlight_file_by_pattern(pattern)
+        assert(not hl.invalid_pattern)
+
+        pattern = "["
+        hl:highlight_file_by_pattern(pattern)
+        assert(hl.invalid_pattern)
     end)
 
 end)

@@ -2,13 +2,13 @@ local consts = require("nvim-scout.lib.consts")
 scout_searchbar_manager = {}
 scout_searchbar_manager.__index = scout_searchbar_manager
 
-function scout_searchbar_manager:new(id, window_manager, config, extmark_id)
+function scout_searchbar_manager:new(id, window_manager, config, extmark_id, theme)
     local obj = {
         id = id,
         window_manager = window_manager,
-        config = config,
         virt_text_extid = extmark_id,
-        width_percentage = config.size
+        width_percentage = config.size,
+        theme = theme
     }
 
     return setmetatable(obj, self)
@@ -49,7 +49,6 @@ function scout_searchbar_manager:resize_searchbar()
             self.window_manager:update_window_config(self.id, config)
          end
         end)
-
     end
 end
 
@@ -75,7 +74,7 @@ function scout_searchbar_manager:get_searchbar_contents()
 end
 
 function scout_searchbar_manager:set_searchbar_contents(contents)
-    self.window_manager:set_window_buf_contents(self.id, {contents})
+    self.window_manager:set_window_buf_contents(self.id, contents)
 end
 
 function scout_searchbar_manager:reset_match_text(match_text)
@@ -116,9 +115,9 @@ function scout_searchbar_manager:get_searchbar_config()
                 focusable=false,
                 height=1,
                 style="minimal",
-                border=Scout_Theme:get_window_border("searchbar"),
+                border=self.theme:get_window_border("searchbar"),
                 title_pos="center",
-                title=Scout_Theme:get_searchbar_title()
+                title=self.theme:get_searchbar_title()
             }
         }
     end

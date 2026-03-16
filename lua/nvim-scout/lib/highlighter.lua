@@ -10,7 +10,6 @@ function scout_highlighter:new(hl_namespace, mode_mgr)
         hl_win = -1,-- editor_window,
         hl_context = consts.buffer.NO_CONTEXT,
         hl_namespace = hl_namespace,
-        hl_wc_ext_id = consts.highlight.NO_WORD_COUNT_EXTMARK,
         matches = {},
         match_index = 1,
         invalid_pattern = false,
@@ -79,6 +78,7 @@ function scout_highlighter:highlight_file_by_pattern(pattern)
         Scout_Logger:warning_print("Nil or empty pattern cancelling search")
         return
     end
+
     if self.hl_context == consts.buffer.NO_CONTEXT then
         Scout_Logger:warning_print("No context to search through")
         return
@@ -102,7 +102,7 @@ function scout_highlighter:highlight_file_by_pattern(pattern)
         if not success then
             return
         end
-         while pattern_start ~= nil do
+        while pattern_start ~= nil do
              -- highlight with start index and end index
             self:highlight_pattern_in_line(line_number - 1, pattern_start - 1, pattern_end)
             search_index = pattern_end + 1
@@ -165,7 +165,7 @@ function scout_highlighter:get_current_match_text()
         return consts.virt_text.invalid_pattern
     end
 
-    if #match_list == 0 then
+    if not match_list or #match_list == 0 then
         return consts.virt_text.no_matches
     end
 
@@ -174,6 +174,8 @@ function scout_highlighter:get_current_match_text()
     and match <= #match_list then
         local match_str = match .. "/" .. #match_list
         return match_str
+    else
+        return ""
     end
 end
 
@@ -193,6 +195,7 @@ function scout_highlighter:highlight_pattern_in_line(line_number, word_start, wo
             { end_col = word_end, hl_group = consts.colorscheme_groups.search_result })
         table.insert(self.matches, match_obj:new(line_number + 1, word_start, word_end, extmark_id))
     end
+
 end
 
 -------------------------------------------------------------

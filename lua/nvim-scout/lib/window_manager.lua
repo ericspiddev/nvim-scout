@@ -2,7 +2,6 @@ local consts = require('nvim-scout.lib.consts')
 scout_window_manager = {}
 scout_window_manager.__index = scout_window_manager
 
-scout_window_manager.WINDOW_TYPES = {SEARCH = 0, BANNER = 1}
 
 function scout_window_manager:new()
     local obj = {
@@ -171,10 +170,14 @@ function scout_window_manager:get_window_buf_line(name, line)
 end
 
 function scout_window_manager:set_window_buf_contents(name, new_contents)
+    if not new_contents then
+        return
+    end
+
     local buffer = self:get_window_buffer(name)
     if buffer then
         vim.api.nvim_buf_set_lines(buffer, consts.lines.START, consts.lines.END,
-                              true, new_contents)
+                            true, {new_contents})
     end
 end
 
@@ -187,6 +190,12 @@ function scout_window_manager:set_window_extmarks(name, line_start, line_end, op
                 line_end,
                 opts)
         end
+    end)
+end
+
+function scout_window_manager:get_window_extmark(name, extmark_id)
+    self:perform_window_action(name, function (window)
+        return window.extmarks[extmark_id]
     end)
 end
 

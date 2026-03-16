@@ -24,7 +24,7 @@
         CURRENT_BUFFER = 0,
         INVALID_BUFFER = -1,
         NO_CONTEXT = -1,
-        EMPTY_BUFFER = {},
+        EMPTY_BUFFER = "",
         SCRATCH_BUFFER = true,
         LIST_BUFFER = true,
         VALID_LUA_EVENTS = {"on_lines", "on_bytes", "on_changedtick", "on_detach", "on_reload"}
