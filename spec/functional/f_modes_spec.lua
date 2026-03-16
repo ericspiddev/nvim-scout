@@ -4,24 +4,22 @@ local consts = require('nvim-scout.lib.consts')
 local def_keymaps = require('nvim-scout.lib.config').defaults.keymaps
 local func_helpers = require('spec.functional.f_spec_helpers')
 
-local REGEX_MODE = consts.modes.lua_pattern
+local LUA_PATTERN_MODE = consts.modes.lua_pattern
 local MATCH_CASE_MODE = consts.modes.case_sensitive
 
 local async_mode_assert = function (...)
-    local mode_mgr, specified_mode, expected_status = ...
-    local mode = mode_mgr.modes[specified_mode]
-    assert(mode)
-    assert.equals(mode_mgr:get_mode_status(specified_mode), expected_status)
+    local test_scout, specified_mode, expected_status = ...
+    local mode_id = test_scout.mode_mgr.modes[specified_mode].name
+    assert(mode_id)
+    local banner_window = test_scout.window_manager:get_managed_window(mode_id)
+    assert.equals(test_scout.mode_mgr:get_mode_status(specified_mode), expected_status)
     if expected_status then
-        assert.is_not.equals(mode.banner_window_id, consts.window.INVALID_WINDOW_ID)
-        assert.is_not.equals(mode.banner_buf, consts.window.INVALID_WINDOW_ID)
-        assert.is_not.equals(mode.search_bar_win, consts.window.INVALID_WINDOW_ID)
-
-        local banner_reads = vim.api.nvim_buf_get_lines(mode.banner_buf, 0, 1, true)[1]
-        assert.equals(banner_reads, ' ' .. mode.name ..' ')
+        assert(banner_window.open)
+        assert.equals(banner_window.config.nvim_open_win_config.win, test_scout.searchbar_manager:get_searchbar().id)
+        local banner_reads = vim.api.nvim_buf_get_lines(banner_window.buffer, 0, 1, true)[1]
+        assert.equals(banner_reads, ' ' .. mode_id ..' ')
     else
-        assert.equals(mode.banner_window_id, consts.window.INVALID_WINDOW_ID)
-        assert.equals(mode.banner_buf, consts.window.INVALID_WINDOW_ID)
+        assert(not banner_window.open)
     end
 end
 
@@ -38,12 +36,12 @@ local async_match_pos_check = function (...)
 end
 
 local async_invalid_check = function (...)
-    local search, hl = ...
-    local buffer = search.query_buffer
-    local hl_ext_mark = hl.hl_wc_ext_id
-    local extmark_details = vim.api.nvim_buf_get_extmark_by_id(buffer, hl.hl_namespace, hl_ext_mark, {details = true})[3]
+    local test_scout = ...
+    local searchbar = test_scout.searchbar_manager:get_searchbar()
+    local buffer = searchbar.buffer
+    local ext_mark_id = searchbar.extmarks[scout.searchbar_ext_id]
+    local extmark_details = vim.api.nvim_buf_get_extmark_by_id(buffer, scout.namespace, ext_mark_id, {details = true})[3]
     assert.equals(extmark_details.virt_text[1][1], consts.virt_text.invalid_pattern)
-
 end
 
 describe('Functional: Modes', function ()
@@ -58,28 +56,27 @@ describe('Functional: Modes', function ()
     end)
 
     it('are able to be toggled all with their keymaps', function ()
-        local mode_mgr = scout.search_bar.mode_manager
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:keycodes_user_keypress(def_keymaps.case_sensitive_toggle)
-        utils:async_asserts(consts.test.async_delay, async_mode_assert, mode_mgr, MATCH_CASE_MODE, true)
+        utils:async_asserts(consts.test.async_delay, async_mode_assert, scout, MATCH_CASE_MODE, true)
 
         utils:keycodes_user_keypress(def_keymaps.pattern_toggle)
-        utils:async_asserts(consts.test.async_delay, async_mode_assert, mode_mgr, REGEX_MODE, true)
-        utils:async_asserts(consts.test.async_delay, async_mode_assert, mode_mgr, MATCH_CASE_MODE, true)
+        utils:async_asserts(consts.test.async_delay, async_mode_assert, scout, LUA_PATTERN_MODE, true)
+        utils:async_asserts(consts.test.async_delay, async_mode_assert, scout, MATCH_CASE_MODE, true)
 
 
         utils:keycodes_user_keypress(def_keymaps.case_sensitive_toggle)
-        utils:async_asserts(consts.test.async_delay, async_mode_assert, mode_mgr, MATCH_CASE_MODE, false)
-        utils:async_asserts(consts.test.async_delay, async_mode_assert, mode_mgr, REGEX_MODE, true)
+        utils:async_asserts(consts.test.async_delay, async_mode_assert, scout, MATCH_CASE_MODE, false)
+        utils:async_asserts(consts.test.async_delay, async_mode_assert, scout, LUA_PATTERN_MODE, true)
 
         utils:keycodes_user_keypress(def_keymaps.pattern_toggle)
-        utils:async_asserts(consts.test.async_delay, async_mode_assert, mode_mgr, REGEX_MODE, false)
-        utils:async_asserts(consts.test.async_delay, async_mode_assert, mode_mgr, MATCH_CASE_MODE, false)
+        utils:async_asserts(consts.test.async_delay, async_mode_assert, scout, LUA_PATTERN_MODE, false)
+        utils:async_asserts(consts.test.async_delay, async_mode_assert, scout, MATCH_CASE_MODE, false)
     end)
 
     it('properly applies the Match Case mode for both on and off', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         local expected_matches = 39
         func_helpers:reset_open_buf(test_buf)
         utils:emulate_user_typing("node")
@@ -113,7 +110,7 @@ describe('Functional: Modes', function ()
 
     it('properly applies the lua pattern mode for both on and off', function ()
         local test_buf = "lua_buffer.lua"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         local expected_matches = 1
         func_helpers:reset_open_buf(test_buf)
         utils:emulate_user_typing("[\"app_name\"]")
@@ -150,45 +147,45 @@ describe('Functional: Modes', function ()
 
     it('reports an invalid pattern in the search buffer', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         local expected_matches = 0
         func_helpers:reset_search_bar()
         func_helpers:reset_open_buf(test_buf)
         utils:keycodes_user_keypress(def_keymaps.pattern_toggle)
         utils:emulate_user_typing("%")
-        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout.search_bar, hl)
+        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout, hl)
 
         func_helpers:reset_search_bar()
         utils:emulate_user_typing("%%%")
-        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout.search_bar, hl)
+        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout, hl)
 
         func_helpers:reset_search_bar()
         utils:emulate_user_typing("[[[[[[[[")
-        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout.search_bar, hl)
+        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout, hl)
 
         func_helpers:reset_search_bar()
         utils:emulate_user_typing("[][][")
-        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout.search_bar, hl)
+        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout, hl)
 
         func_helpers:reset_search_bar()
         utils:emulate_user_typing("[]")
-        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout.search_bar, hl)
+        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout, hl)
 
         func_helpers:reset_search_bar()
         utils:emulate_user_typing("][")
-        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout.search_bar, hl)
+        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout, hl)
 
         func_helpers:reset_search_bar()
         utils:emulate_user_typing("%ba")
-        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout.search_bar, hl)
+        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout, hl)
 
         func_helpers:reset_search_bar()
         utils:emulate_user_typing("[^]")
-        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout.search_bar, hl)
+        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout, hl)
 
         func_helpers:reset_search_bar()
         utils:emulate_user_typing("%10")
-        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout.search_bar, hl)
+        utils:async_asserts(consts.test.async_delay, async_invalid_check, scout, hl)
 
         expected_matches = 1477
         func_helpers:reset_search_bar()
@@ -199,7 +196,7 @@ describe('Functional: Modes', function ()
 
     it('can search for patterns that would normally get stuck', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         local expected_matches = 124
         func_helpers:reset_search_bar()
         func_helpers:reset_open_buf(test_buf)
@@ -226,7 +223,7 @@ describe('Functional: Modes', function ()
 
     it('ignores empty lines when searching', function ()
         local test_buf = "lua_buffer.lua" -- The file has 165 lines
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         local expected_matches = 138 -- Only 138 of them have some sort of content
         func_helpers:reset_search_bar()
         func_helpers:reset_open_buf(test_buf)
@@ -244,7 +241,7 @@ describe('Functional: Modes', function ()
 
     it('adjusts search results when a mode toggles on and off', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         local expected_matches = 5
         func_helpers:reset_search_bar()
         func_helpers:reset_open_buf(test_buf)

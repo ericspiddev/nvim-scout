@@ -1,10 +1,9 @@
-local init = require('nvim-scout.init')
+local scout = require('nvim-scout.init')
 local default_conf = require('nvim-scout.lib.config').defaults
 local utils = require('spec.spec_utils')
 local func_helpers = require('spec.functional.f_spec_helpers')
 
 describe('Functional: Search bar', function()
-        local scout = init
         scout.setup()
 
         before_each(function()
@@ -18,7 +17,7 @@ describe('Functional: Search bar', function()
 
         utils:emulate_user_typing("Eric Spidle is so cool!")
 
-        local search_str = vim.api.nvim_buf_get_lines(scout.search_bar.query_buffer, 0, 1, true)[1]
+        local search_str = vim.api.nvim_buf_get_lines(scout.query_buffer, 0, 1, true)[1]
         assert.equals(search_str, "Eric Spidle is so cool!")
 
     end)
@@ -27,23 +26,24 @@ describe('Functional: Search bar', function()
 
         utils:emulate_user_typing("New string to enter!")
 
-        local search_str = vim.api.nvim_buf_get_lines(scout.search_bar.query_buffer, 0, 1, true)[1]
+        local search_str = vim.api.nvim_buf_get_lines(scout.query_buffer, 0, 1, true)[1]
         assert.equals(search_str, "New string to enter!")
         utils:emulate_user_keypress(default_conf.keymaps.clear_search)
 
-        search_str = vim.api.nvim_buf_get_lines(scout.search_bar.query_buffer, 0, 1, true)[1]
+        search_str = vim.api.nvim_buf_get_lines(scout.query_buffer, 0, 1, true)[1]
         assert.equals(search_str, "")
     end)
 
     it('can grab what is in the search bar', function()
 
+        local searchbar = scout.searchbar_manager
         utils:emulate_user_typing("First string to enter!")
-        assert.equals(scout.search_bar:get_window_contents(), "First string to enter!")
+        assert.equals(searchbar:get_searchbar_contents(), "First string to enter!")
         utils:emulate_user_keypress(default_conf.keymaps.clear_search)
 
         utils:emulate_user_typing("Second string")
 
-        assert.equals(scout.search_bar:get_window_contents(), "Second string")
+        assert.equals(searchbar:get_searchbar_contents(), "Second string")
         utils:emulate_user_keypress(default_conf.keymaps.clear_search)
     end)
 
@@ -53,51 +53,51 @@ describe('Functional: Search bar', function()
         utils:emulate_user_typing(" bottom line string")
 
         -- FIXME: the emulated typing is doing some odd stuff for this case still this proves the enter doesn't work
-        assert.equals(scout.search_bar:get_window_contents(), "Top line strin bottom line stringg ")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Top line strin bottom line stringg ")
     end)
 
     it('does not clear the string if you unfocus the search bar and then come back', function()
         utils:emulate_user_typing("Sticky string")
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
 
         utils:keycodes_user_keypress("<C-w>h") -- switch out of window
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
 
         utils:emulate_user_keypress(default_conf.keymaps.toggle_focus)
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
     end)
 
     it('does clear the search bar if it\'s closed and reopened', function()
         utils:emulate_user_typing("Won't be here soon")
-        assert.equals(scout.search_bar:get_window_contents(), "Won't be here soon")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Won't be here soon")
 
         utils:emulate_user_keypress(default_conf.keymaps.toggle_search) -- close
         utils:emulate_user_keypress(default_conf.keymaps.toggle_search) -- open
-        assert.equals(scout.search_bar:get_window_contents(), "")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "")
     end)
 
     it('carries the current search contents across windows and tabs', function ()
         utils:emulate_user_typing("Sticky string")
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
         utils:emulate_user_keypress(default_conf.keymaps.toggle_focus)
         func_helpers:make_new_tab_and_open_buffer("lua_buffer.lua")
 
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
         func_helpers:make_new_tab_and_open_buffer("c_buffer.c")
 
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
         func_helpers:make_new_tab_and_open_buffer("js_buffer.js")
 
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
 
         utils:emulate_user_keypress('gt')
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
 
         utils:emulate_user_keypress('gt')
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
 
         utils:emulate_user_keypress('gT')
-        assert.equals(scout.search_bar:get_window_contents(), "Sticky string")
+        assert.equals(scout.searchbar_manager:get_searchbar_contents(), "Sticky string")
     end)
 
 

@@ -70,17 +70,21 @@ local async_check_extmark_count = function (...)
 end
 
 local async_check_virt_text = function (...)
-    local hl, buf, match_count, direction = ...
+    local test_scout, match_count, direction = ...
+    local scout_window = test_scout.searchbar_manager:get_searchbar()
     utils:emulate_user_keypress(direction)
-    local wc_extmark = vim.api.nvim_buf_get_extmark_by_id(buf, hl.hl_namespace, hl.hl_wc_ext_id, {details = true} )
+    local ext_id = scout_window.extmarks[scout.searchbar_ext_id]
+    local wc_extmark = vim.api.nvim_buf_get_extmark_by_id(scout_window.buffer, scout.namespace, ext_id, {details = true} )
     assert(wc_extmark)
     local match_text = wc_extmark[3].virt_text[1][1] -- weird indexing but it works?
-    assert.equals(match_count .. "/" .. #hl.matches, match_text)
+    assert.equals(match_count .. "/" .. #scout.highlighter.matches, match_text)
 end
 
 local async_check_no_matches = function (...)
-    local hl, buf = ...
-    local wc_extmark = vim.api.nvim_buf_get_extmark_by_id(buf, hl.hl_namespace, hl.hl_wc_ext_id, {details = true} )
+    local test_scout = ...
+    local scout_window = test_scout.searchbar_manager:get_searchbar()
+    local ext_id = scout_window.extmarks[scout.searchbar_ext_id]
+    local wc_extmark = vim.api.nvim_buf_get_extmark_by_id(scout_window.buffer, scout.namespace, ext_id, {details = true} )
     assert(wc_extmark)
     local match_text = wc_extmark[3].virt_text[1][1] -- weird indexing but it works?
     assert.equals(consts.virt_text.no_matches, match_text)
@@ -98,7 +102,7 @@ describe('Functional: Highlighter', function ()
     end)
 
     it('updates highlight context when opening a new buffer', function ()
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         assert.same(hl.hl_context, {""})
         local test_buf = "lorem_buf.txt"
         open_buffer_asserts(hl, test_buf)
@@ -115,7 +119,7 @@ describe('Functional: Highlighter', function ()
 
     it('can search files for strings and captures the correct number of matches', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
 
@@ -149,7 +153,7 @@ describe('Functional: Highlighter', function ()
 
     it('matches by exact string ignoring case by default', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
 
@@ -180,7 +184,7 @@ describe('Functional: Highlighter', function ()
 
     it('can move the cursor between matches', function ()
         local test_buf = "cursor_test.txt"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("string")
@@ -204,7 +208,7 @@ describe('Functional: Highlighter', function ()
 
     it('moves to the closest match based on window\'s cursor position', function ()
         local test_buf = "cursor_test.txt"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("cursor")
@@ -233,7 +237,7 @@ describe('Functional: Highlighter', function ()
 
     it('highlights all the matches with extmarks', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("void")
@@ -254,7 +258,7 @@ describe('Functional: Highlighter', function ()
 
     it('changes highlight color for selected match', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("void")
@@ -282,45 +286,44 @@ describe('Functional: Highlighter', function ()
 
     it('tracks the current match index and totals in the search bar virt_text', function ()
         local test_buf = "lua_buffer.lua"
-        local hl = scout.search_bar.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("cur")
 
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 1, def_keymaps.next_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 2, def_keymaps.next_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 3, def_keymaps.next_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 4, def_keymaps.next_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 5, def_keymaps.next_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 6, def_keymaps.next_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 7, def_keymaps.next_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 8, def_keymaps.next_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 1, def_keymaps.next_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 2, def_keymaps.next_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 3, def_keymaps.next_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 4, def_keymaps.next_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 5, def_keymaps.next_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 6, def_keymaps.next_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 7, def_keymaps.next_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 8, def_keymaps.next_result)
 
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 1, def_keymaps.next_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 8, def_keymaps.prev_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 7, def_keymaps.prev_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 6, def_keymaps.prev_result)
-        utils:async_asserts(consts.test.async_delay, async_check_virt_text, hl, scout.search_bar.query_buffer, 5, def_keymaps.prev_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 1, def_keymaps.next_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 8, def_keymaps.prev_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 7, def_keymaps.prev_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 6, def_keymaps.prev_result)
+        utils:async_asserts(consts.test.async_delay, async_check_virt_text, scout, 5, def_keymaps.prev_result)
     end)
 
     it('displays no matches when a search yields no matches', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("Eric Spidle this cannot be in the file")
 
-        utils:async_asserts(consts.test.async_delay, async_check_no_matches, hl, scout.search_bar.query_buffer)
+        utils:async_asserts(consts.test.async_delay, async_check_no_matches, scout, hl, scout.query_buffer)
 
         test_buf = "js_buffer.js"
         func_helpers:reset_open_buf(test_buf)
         utils:emulate_user_typing("privateId1")
-        utils:async_asserts(consts.test.async_delay, async_check_no_matches, hl, scout.search_bar.query_buffer)
+        utils:async_asserts(consts.test.async_delay, async_check_no_matches, scout, hl, scout.query_buffer)
     end)
 
     it('clears the extmarks when leaving the search bar and restores them on refocus', function ()
         local test_buf = "js_buffer.js"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("node")
@@ -343,7 +346,7 @@ describe('Functional: Highlighter', function ()
 
     it('refreshes results if a change is made after switching out of search', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         utils:open_test_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("node")
@@ -361,7 +364,7 @@ describe('Functional: Highlighter', function ()
 
     it('runs searches across all tabs as scout follows ', function ()
         local test_buf = "c_buffer.c"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         func_helpers:close_all_tabs_and_open_buffer(test_buf)
 
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
@@ -394,7 +397,7 @@ describe('Functional: Highlighter', function ()
 
     it('runs searches across windows as scout follows and updates highlight window to split', function ()
         local test_buf = "lua_buffer.lua"
-        local hl = scout.search_bar.highlighter
+        local hl = scout.highlighter
         func_helpers:close_all_tabs_and_open_buffer(test_buf)
         utils:emulate_user_keypress(def_keymaps.toggle_focus)
         utils:emulate_user_typing("ty")

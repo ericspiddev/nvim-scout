@@ -8,6 +8,7 @@ local keymaps_mgr = require("nvim-scout.lib.keymaps")
 local history = require("nvim-scout.lib.history_manager")
 local highlighter = require("nvim-scout.lib.highlighter")
 local events = require("nvim-scout.lib.events")
+local search_mode = require("nvim-scout.lib.search_mode")
 local SCOUT = {}
 
 function SCOUT.setup(user_options)
@@ -25,8 +26,8 @@ function SCOUT.init(scout_config)
     SCOUT.searchbar_ext_id = "search_ext_mark"
     SCOUT.window_manager = window_manager:new()
     SCOUT.search_events = events:new(consts.buffer.VALID_LUA_EVENTS)
-    SCOUT.mode_mgr = mode_mgr:new(SCOUT.namespace, SCOUT.window_manager, Scout_Theme, SCOUT.searchbar_id)
-    SCOUT.searchbar_manager = searchbar_manager:new(SCOUT.searchbar_id, SCOUT.window_manager, scout_config.search, SCOUT.searchbar_ext_id)
+    SCOUT.mode_mgr = mode_mgr:new(SCOUT.namespace, SCOUT.window_manager, Scout_Theme, SCOUT.searchbar_id, search_mode)
+    SCOUT.searchbar_manager = searchbar_manager:new(SCOUT.searchbar_id, SCOUT.window_manager, scout_config.search, SCOUT.searchbar_ext_id, Scout_Theme)
     SCOUT.search_modes = {}
     SCOUT.highlighter = highlighter:new(SCOUT.namespace, SCOUT.mode_mgr)
     SCOUT.history = history:new(consts.history.MAX_ENTRIES)
@@ -101,6 +102,12 @@ function SCOUT.update_search_context()
 end
 
 function SCOUT.open_search(enter_insert, focus)
+    if enter_insert == nil then
+        enter_insert = true
+    end
+    if focus == nil then
+        focus = true
+    end
     SCOUT.searchbar_manager:open_searchbar(focus, SCOUT.namespace)
     SCOUT.search_events:add_event("on_lines", SCOUT, "on_lines_handler") -- add the on_lines_handler to search bar's
     SCOUT.update_search_context()
@@ -111,7 +118,8 @@ function SCOUT.open_search(enter_insert, focus)
     if enter_insert then
         vim.cmd('startinsert') -- allow for typing right away
     else
-        vim.cmd('normal 0') -- hack to go back to normal mode
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-c>', true, false, true), 'n', true)
+        --vim.cmd('normal! <Esc>') -- hack to go back to normal mode
     end
 
     SCOUT.set_search_keymaps(SCOUT.keymap_table.search_bar, SCOUT.query_buffer)
@@ -133,7 +141,8 @@ function SCOUT.register_keymaps(keymap_config)
             prev_history = {mode = "n", key = keymap_config.prev_history, handler = SCOUT.previous_history_entry},
             next_history = {mode = "n", key = keymap_config.next_history, handler = SCOUT.next_history_entry},
             case_sensitive_toggle = {mode = "n", key = keymap_config.case_sensitive_toggle, handler = SCOUT.toggle_case_mode},
-            pattern_toggle = {mode = "n", key = keymap_config.pattern_toggle, handler = SCOUT.toggle_pattern_mode}
+            pattern_toggle = {mode = "n", key = keymap_config.pattern_toggle, handler = SCOUT.toggle_pattern_mode},
+            block_enter = {mode = "i", key = "<CR>", handler = function () end}
         },
     }
 
@@ -268,9 +277,9 @@ function SCOUT.search_cursor_word()
 end
 
 function SCOUT.search_selection(selection)
-     if not SCOUT.searchbar_manager:is_searchbar_open() then
+    if not SCOUT.searchbar_manager:is_searchbar_open() then
         SCOUT.open_search(false, false)
-     end
+    end
     SCOUT.searchbar_manager:set_searchbar_contents(selection)
     local searchbar = SCOUT.searchbar_manager:get_searchbar()
     if searchbar then

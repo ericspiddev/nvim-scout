@@ -1,24 +1,24 @@
 scout_mode_manager = {}
 local consts = require("nvim-scout.lib.consts")
-local search_mode = require("nvim-scout.lib.search_mode")
 
 scout_mode_manager.__index = scout_mode_manager
-function scout_mode_manager:new(namespace, window_manager, theme, searchbar_name)
+function scout_mode_manager:new(namespace, window_manager, theme, searchbar_name, search_mode)
     local obj = {
         modes = {},
         namespace = namespace,
         search_id = searchbar_name,
         window_manager = window_manager,
         theme = theme,
+        search_mode = search_mode,
         next_banner_col = 0
     }
     return setmetatable(obj, self)
 end
 
 function scout_mode_manager:register_search_mode(mode)
-    local new_mode = search_mode:new(mode.name, mode.symbol, self.namespace, mode.text_color, mode.border_hl)
+    local new_mode = self.search_mode:new(mode.name, mode.symbol, self.namespace, mode.text_color, mode.border_hl)
     self.window_manager:register_window(mode.name, {buffer = {list_buf = false, scratch_buf = false }})
-    self.modes[mode.name]= new_mode
+    self.modes[mode.name] = new_mode
 end
 
 -- when each mode is active we should display a little window with a letter
@@ -56,7 +56,7 @@ function scout_mode_manager:toggle_mode(mode_index)
         local banner_config = target_mode:update_banner_config(border, self.next_banner_col, search_window.id)
         self.window_manager:update_nvim_window_config(banner_window_id, banner_config)
         self.window_manager:open_window_by_name(target_mode.name, self.namespace)
-        self.window_manager:set_window_buf_contents(banner_window_id, {" " ..target_mode.name .." "})
+        self.window_manager:set_window_buf_contents(banner_window_id, " " ..target_mode.name .." ")
         self.window_manager:set_window_extmarks(banner_window_id, 0, 1, {
             end_col = #target_mode.name + consts.modes.padding_space,
             hl_group = target_mode.text_hl}, "modifier_description")

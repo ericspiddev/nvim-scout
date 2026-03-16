@@ -1,50 +1,22 @@
 local mode_manager = require("nvim-scout.lib.mode_manager")
-local search_mode = require("nvim-scout.lib.search_mode")
+local mock_search_mode = require("spec.mocks.search_mode_mock")
+local mock_window_manager = require("spec.mocks.window_manager_mock")
+local mock_theme_parser = require("spec.mocks.theme_parser_mock")
 local utils = require("spec.spec_utils")
 local consts = require("nvim-scout.lib.consts")
 local stub = require("luassert.stub")
 utils:register_global_logger()
 
-function create_mode_manager(extra_modes)
-    local m
+function create_mode_manager()
     local curr_modes = utils:get_supported_modes()
-    if extra_modes then
-        table.move(extra_modes, 1, #extra_modes, #curr_modes + 1, curr_modes)
+    local search_id = "search"
+    local window_manager = mock_window_manager:new()
+    window_manager:register_window(search_id, {})
+    local m = mode_manager:new(0, window_manager, mock_theme_parser, search_id, mock_search_mode)
+    for _, mode in pairs(curr_modes) do
+        m:register_search_mode(mode)
     end
-    m = mode_manager:new(curr_modes)
     return m
-end
-
-function stub_banners()
-    stub(search_mode, "hide_banner").returns()
-    stub(search_mode, "show_banner").returns()
-end
-
-function revert_banners()
-    search_mode.hide_banner:revert()
-    search_mode.show_banner:revert()
-end
-
-function mock_nvim_api_for_banners()
-    stub(vim.api, "nvim_win_is_valid").returns(true)
-    stub(vim.api, "nvim_create_buf").returns(1)
-    stub(vim.api, "nvim_open_win").returns(1000)
-    stub(vim.api, "nvim_win_set_hl_ns").returns()
-    stub(vim.api, "nvim_buf_set_lines").returns()
-    stub(vim.api, "nvim_buf_set_extmark").returns()
-    stub(vim.api, "nvim_win_close").returns()
-    stub(vim.api, "nvim_buf_delete").returns()
-end
-
-function revert_nvim_api_for_banners()
-    vim.api.nvim_win_is_valid:revert()
-    vim.api.nvim_create_buf:revert()
-    vim.api.nvim_open_win:revert()
-    vim.api.nvim_win_set_hl_ns:revert()
-    vim.api.nvim_buf_set_lines:revert()
-    vim.api.nvim_buf_set_extmark:revert()
-    vim.api.nvim_win_close:revert()
-    vim.api.nvim_buf_delete:revert()
 end
 
 local REGEX_MODE = consts.modes.lua_pattern
@@ -93,7 +65,7 @@ describe('Mode manager', function ()
 
     it('successfully toggles modes', function ()
         local manager = create_mode_manager()
-        stub_banners()
+        --stub_banners()
 
         assert.equals(manager:get_mode_status(MATCH_CASE_MODE), false)
         assert.equals(manager:get_mode_status(REGEX_MODE), false)
@@ -109,7 +81,6 @@ describe('Mode manager', function ()
         assert.equals(manager:get_mode_status(REGEX_MODE), false)
         assert.equals(manager:get_mode_status(MATCH_CASE_MODE), false)
 
-        revert_banners()
     end)
 
     it('updates all modes with the relevant window id when a valid window is presented', function ()
@@ -175,17 +146,18 @@ describe('Mode manager', function ()
 
     it('properly calculates where to place the next mode window', function ()
 
-        mock_nvim_api_for_banners()
         local manager = create_mode_manager()
         assert.equals(manager.next_banner_col, 0)
 
         manager:update_relative_window(10)
         manager:toggle_mode(REGEX_MODE)
-        assert.equals(manager.next_banner_col, manager.modes[REGEX_MODE]:get_banner_display_width() + consts.modes.banner_gap)
+        local mode = manager.modes[REGEX_MODE]
+        assert.equals(manager.next_banner_col, mode:get_banner_display_width() + mode:get_extra_padding())
         local curr_col = manager.next_banner_col
 
         manager:toggle_mode(MATCH_CASE_MODE)
-        assert.equals(manager.next_banner_col, curr_col + manager.modes[MATCH_CASE_MODE]:get_banner_display_width() + consts.modes.banner_gap)
+        mode = manager.modes[MATCH_CASE_MODE]
+        assert.equals(manager.next_banner_col, curr_col + mode:get_banner_display_width() + mode:get_extra_padding())
         curr_col = manager.next_banner_col
 
         manager:toggle_mode(REGEX_MODE)
@@ -199,19 +171,18 @@ describe('Mode manager', function ()
         assert.equals(manager.next_banner_col, curr_col)
 
         manager:toggle_mode(REGEX_MODE)
-        assert.equals(manager.next_banner_col, manager.modes[MATCH_CASE_MODE]:get_banner_display_width() + consts.modes.banner_gap)
-        revert_nvim_api_for_banners()
+        mode = manager.modes[REGEX_MODE]
+        assert.equals(manager.next_banner_col, 0)
 
     end)
 
     it('only adjusts the next_banner_col when an operation is successful', function ()
-        mock_nvim_api_for_banners()
         local manager = create_mode_manager()
         assert.equals(manager.next_banner_col, 0)
 
-        manager:toggle_mode(REGEX_MODE)
+        manager:toggle_mode("Does not exist")
         assert.equals(manager.next_banner_col, 0)
-        manager:toggle_mode(MATCH_CASE_MODE)
+        manager:toggle_mode("Fake mode")
         assert.equals(manager.next_banner_col, 0)
     end)
 
