@@ -8,13 +8,13 @@ scout_search_bar.MAX_WIDTH = 1
 function scout_search_bar:new(window_manager, scout_config, scout_namespace)
     local obj = {
         window_manager = window_manager,
-        query_buffer = consts.buffer.INVALID_BUFFER,
+        query_buffer = Scout_Consts.buffer.INVALID_BUFFER,
         namespace = scout_namespace,
         width_percent = scout_config.search.size,
         should_enter = true,
         search_events = nil,
-        win_id = consts.window.INVALID_WINDOW_ID,
-        host_window = consts.window.INVALID_WINDOW_ID,
+        win_id = Scout_Consts.window.INVALID_WINDOW_ID,
+        host_window = Scout_Consts.window.INVALID_WINDOW_ID,
     }
     return setmetatable(obj, self)
 end
@@ -57,14 +57,14 @@ function scout_search_bar:open(enter_insert, focus_search)
         end
         self.host_window = window
         self.width_percent = self:cap_width(self.width_percent)
-        self.query_buffer = vim.api.nvim_create_buf(consts.buffer.LIST_BUFFER, consts.buffer.SCRATCH_BUFFER)
+        self.query_buffer = vim.api.nvim_create_buf(Scout_Consts.buffer.LIST_BUFFER, Scout_Consts.buffer.SCRATCH_BUFFER)
         self.query_win_config.width = self:get_search_bar_width(self.host_window, self.width_percent)
         self.query_win_config.col = self:get_search_bar_col(self.host_window, self.query_win_config.width)
         self.win_id = vim.api.nvim_open_win(self.query_buffer, focus_search, self.query_win_config)
-        vim.api.nvim_buf_set_name(self.query_buffer, consts.search.search_name)
+        vim.api.nvim_buf_set_name(self.query_buffer, Scout_Consts.search.search_name)
 
         self.mode_manager:update_relative_window(self.win_id)
-        if self.highlighter.hl_context == consts.buffer.NO_CONTEXT then
+        if self.highlighter.hl_context == Scout_Consts.buffer.NO_CONTEXT then
             Scout_Logger:warning_print("No valid context found attempting to populate now")
             self.highlighter:update_hl_context(window, self.query_buffer, self.host_window)
         end

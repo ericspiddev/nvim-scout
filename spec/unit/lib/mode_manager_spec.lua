@@ -1,11 +1,13 @@
+local utils = require("spec.spec_utils")
+utils:register_global_logger()
+utils:register_global_consts()
 local mode_manager = require("nvim-scout.lib.mode_manager")
 local mock_search_mode = require("spec.mocks.search_mode_mock")
 local mock_window_manager = require("spec.mocks.window_manager_mock")
 local mock_theme_parser = require("spec.mocks.theme_parser_mock")
-local utils = require("spec.spec_utils")
 local consts = require("nvim-scout.lib.consts")
 local stub = require("luassert.stub")
-utils:register_global_logger()
+
 
 function create_mode_manager()
     local curr_modes = utils:get_supported_modes()

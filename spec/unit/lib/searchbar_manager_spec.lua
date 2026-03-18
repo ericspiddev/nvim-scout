@@ -1,12 +1,13 @@
 -- import the luassert.mock module
-local stub = require('luassert.stub')
-local consts = require('nvim-scout.lib.consts')
 local utils = require('spec.spec_utils')
+utils:register_global_logger()
+utils:register_global_consts()
+local stub = require('luassert.stub')
 local default_conf = require('nvim-scout.lib.config').defaults
 local mock_wm = require('spec.mocks.window_manager_mock')
 local mock_theme = require('spec.mocks.theme_parser_mock')
 local searchbar_manager = require('nvim-scout.lib.searchbar_manager')
-utils:register_global_logger()
+
 
 -- test constants
 SEARCH_BAR_BUF_ID = 1

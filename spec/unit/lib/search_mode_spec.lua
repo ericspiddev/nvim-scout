@@ -2,7 +2,7 @@ local mode = require("nvim-scout.lib.search_mode")
 local stub = require("luassert.stub")
 local consts = require("nvim-scout.lib.consts")
 local utils = require("spec.spec_utils")
-local logger = require("nvim-scout.lib.scout_logger")
+utils:register_global_consts()
 utils:register_global_logger()
 describe('search mode', function ()
 

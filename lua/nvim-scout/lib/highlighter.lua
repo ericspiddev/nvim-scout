@@ -1,14 +1,13 @@
 scout_highlighter = {}
 scout_highlighter.__index = scout_highlighter
-local consts = require("nvim-scout.lib.consts")
 local match_obj = require("nvim-scout.lib.match")
-local pattern_handler = require("nvim-scout.lib.pattern_handler"):new(consts.modes.escape_chars)
+local pattern_handler = require("nvim-scout.lib.pattern_handler"):new(Scout_Consts.modes.escape_chars)
 
 function scout_highlighter:new(hl_namespace, mode_mgr)
     local obj = {
         hl_buf = -1, -- vim.api.nvim_win_get_buf(editor_window),
         hl_win = -1,-- editor_window,
-        hl_context = consts.buffer.NO_CONTEXT,
+        hl_context = Scout_Consts.buffer.NO_CONTEXT,
         hl_namespace = hl_namespace,
         matches = {},
         match_index = 1,
@@ -42,8 +41,8 @@ end
 function scout_highlighter:populate_hl_context(buf_id, hl_win)
     if not vim.api.nvim_buf_is_valid(buf_id) then
         Scout_Logger.warning_print("Attempting to populate context with invalid buffer id")
-        self.hl_context = consts.buffer.NO_CONTEXT
-        self.hl_buf = consts.buffer.INVALID_BUFFER
+        self.hl_context = Scout_Consts.buffer.NO_CONTEXT
+        self.hl_buf = Scout_Consts.buffer.INVALID_BUFFER
         return false
     end
     local total_lines = vim.api.nvim_buf_line_count(buf_id)
@@ -54,13 +53,13 @@ function scout_highlighter:populate_hl_context(buf_id, hl_win)
         Scout_Logger:debug_print("Populating context with " .. total_lines .. " total lines")
 
         Scout_Logger:debug_print("Populating context with " .. total_lines .. " total lines")
-        self.hl_context = vim.api.nvim_buf_get_lines(buf_id, consts.lines.START, total_lines, false)
+        self.hl_context = vim.api.nvim_buf_get_lines(buf_id, Scout_Consts.lines.START, total_lines, false)
         Scout_Logger:debug_print("HL context set too " .. vim.inspect(self.hl_context))
         return true
     else
         Scout_Logger:warning_print("No valid lines found to populate highlight context")
-        self.hl_context = consts.buffer.NO_CONTEXT
-        self.hl_buf = consts.buffer.INVALID_BUFFER
+        self.hl_context = Scout_Consts.buffer.NO_CONTEXT
+        self.hl_buf = Scout_Consts.buffer.INVALID_BUFFER
         return false
     end
 end
@@ -79,7 +78,7 @@ function scout_highlighter:highlight_file_by_pattern(pattern)
         return
     end
 
-    if self.hl_context == consts.buffer.NO_CONTEXT then
+    if self.hl_context == Scout_Consts.buffer.NO_CONTEXT then
         Scout_Logger:warning_print("No context to search through")
         return
     end
@@ -162,11 +161,11 @@ function scout_highlighter:get_current_match_text()
     local match_list = self.matches
 
     if self.invalid_pattern then
-        return consts.virt_text.invalid_pattern
+        return Scout_Consts.virt_text.invalid_pattern
     end
 
     if not match_list or #match_list == 0 then
-        return consts.virt_text.no_matches
+        return Scout_Consts.virt_text.no_matches
     end
 
     if match ~= nil and match > -1
@@ -192,7 +191,7 @@ function scout_highlighter:highlight_pattern_in_line(line_number, word_start, wo
 
     if word_start < word_end then
         local extmark_id = vim.api.nvim_buf_set_extmark(self.hl_buf, self.hl_namespace, line_number, word_start,
-            { end_col = word_end, hl_group = consts.colorscheme_groups.search_result })
+            { end_col = word_end, hl_group = Scout_Consts.colorscheme_groups.search_result })
         table.insert(self.matches, match_obj:new(line_number + 1, word_start, word_end, extmark_id))
     end
 
@@ -214,7 +213,7 @@ function scout_highlighter:move_cursor(index, host_window)
         return
     end
 
-    if self.hl_win == consts.window.INVALID_WINDOW_ID then
+    if self.hl_win == Scout_Consts.window.INVALID_WINDOW_ID then
         Scout_Logger:error_print("Invalid window id to move cursor through" )
         return
     end
@@ -229,15 +228,15 @@ function scout_highlighter:move_cursor(index, host_window)
         Scout_Logger:warning_print("Actually moving through ", self.hl_win)
     end
 
-    self:set_match_highlighting(self.matches[self.match_index], consts.colorscheme_groups.search_result)
+    self:set_match_highlighting(self.matches[self.match_index], Scout_Consts.colorscheme_groups.search_result)
     self.match_index = index
 
     local match = self.matches[self.match_index]
 
     vim.api.nvim_buf_del_extmark(self.hl_buf, self.hl_namespace, match.extmark_id)
     vim.api.nvim_win_set_cursor(self.hl_win, {match:get_cursor_row(), match.m_start})
-    self:set_match_highlighting(match, consts.colorscheme_groups.selected_result)
-    vim.api.nvim_buf_call(self.hl_buf, function () vim.cmd(consts.cmds.CENTER_SCREEN) end)
+    self:set_match_highlighting(match, Scout_Consts.colorscheme_groups.selected_result)
+    vim.api.nvim_buf_call(self.hl_buf, function () vim.cmd(Scout_Consts.cmds.CENTER_SCREEN) end)
     return true
 end
 
@@ -287,7 +286,7 @@ function scout_highlighter:get_closest_match(search_direction)
     local index
     local curr_match
 
-    if search_direction == consts.search.FORWARD then
+    if search_direction == Scout_Consts.search.FORWARD then
         if self.matches[#self.matches].row == line and self.matches[#self.matches].m_start == w_start then
             return 1
         end
@@ -304,7 +303,7 @@ function scout_highlighter:get_closest_match(search_direction)
                 index = index + 1
                 curr_match = self.matches[index]
         end
-    elseif search_direction == consts.search.BACKWARD then
+    elseif search_direction == Scout_Consts.search.BACKWARD then
         if self.matches[1].row == line and self.matches[1].m_start == w_start then
             return #self.matches
         end

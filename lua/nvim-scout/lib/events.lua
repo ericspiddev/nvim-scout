@@ -1,4 +1,3 @@
-local consts = require('nvim-scout.lib.consts')
 scout_events = {}
 
 scout_events.__index = scout_events
@@ -6,7 +5,7 @@ function scout_events:new(valid_events)
     local obj = {
         valid_events = valid_events,
         event_table = {},
-        event_buffer_id = consts.buffer.INVALID_BUFFER,
+        event_buffer_id = Scout_Consts.buffer.INVALID_BUFFER,
     }
     return setmetatable(obj, self)
 end

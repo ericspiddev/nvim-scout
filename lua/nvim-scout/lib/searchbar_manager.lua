@@ -57,7 +57,7 @@ function scout_searchbar_manager:toggle_window_focus()
 end
 
 function scout_searchbar_manager:clear_searchbar()
-    self:set_searchbar_contents(consts.buffer.EMPTY_BUFFER)
+    self:set_searchbar_contents(Scout_Consts.buffer.EMPTY_BUFFER)
 end
 
 function scout_searchbar_manager:get_searchbar()
@@ -80,7 +80,7 @@ end
 function scout_searchbar_manager:reset_match_text(match_text)
     self.window_manager:clear_window_extmark_by_id(self.id, self.virt_text_extid)
     self.window_manager:set_window_extmarks(self.id, 0, -1, {
-        virt_text = { {match_text, consts.search.virt_text_hl} },
+        virt_text = { {match_text, Scout_Consts.search.virt_text_hl} },
         virt_text_pos = "right_align",}, self.virt_text_extid)
 end
 
@@ -104,7 +104,7 @@ function scout_searchbar_manager:get_searchbar_config()
             buffer = {
                 list_buf = true,
                 scratch_buf = true,
-                name = consts.search.search_name,
+                name = Scout_Consts.search.search_name,
             },
             nvim_open_win_config = {
                 relative='editor',

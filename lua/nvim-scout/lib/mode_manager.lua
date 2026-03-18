@@ -1,5 +1,4 @@
 scout_mode_manager = {}
-local consts = require("nvim-scout.lib.consts")
 
 scout_mode_manager.__index = scout_mode_manager
 function scout_mode_manager:new(namespace, window_manager, theme, searchbar_name, search_mode)
@@ -58,7 +57,7 @@ function scout_mode_manager:toggle_mode(mode_index)
         self.window_manager:open_window_by_name(target_mode.name, self.namespace)
         self.window_manager:set_window_buf_contents(banner_window_id, " " ..target_mode.name .." ")
         self.window_manager:set_window_extmarks(banner_window_id, 0, 1, {
-            end_col = #target_mode.name + consts.modes.padding_space,
+            end_col = #target_mode.name + Scout_Consts.modes.padding_space,
             hl_group = target_mode.text_hl}, "modifier_description")
         self.next_banner_col = self.next_banner_col + target_mode:get_banner_display_width() + target_mode:get_extra_padding()
     end
@@ -86,7 +85,7 @@ function scout_mode_manager:update_relative_window(win_id)
     if vim.api.nvim_win_is_valid(win_id) then
         new_window = win_id
     else
-        new_window = consts.window.INVALID_WINDOW_ID
+        new_window = Scout_Consts.window.INVALID_WINDOW_ID
     end
 
     if self.modes ~= nil then
@@ -114,7 +113,7 @@ function scout_mode_manager:apply_modes_to_search_text(line, pattern)
 end
 
 function scout_mode_manager:apply_match_case(line, pattern)
-    if not self:get_mode_status(consts.modes.case_sensitive) and not self:get_mode_status(consts.modes.lua_pattern) then
+    if not self:get_mode_status(Scout_Consts.modes.case_sensitive) and not self:get_mode_status(Scout_Consts.modes.lua_pattern) then
         line = string.lower(line)
         pattern = string.lower(pattern)
     end
@@ -123,6 +122,6 @@ end
 
 function scout_mode_manager:apply_lua_pattern_mode()
     -- when set to false pattern matching is used when set to true only exact matches are shown...
-    return not self:get_mode_status(consts.modes.lua_pattern)
+    return not self:get_mode_status(Scout_Consts.modes.lua_pattern)
 end
 return scout_mode_manager
