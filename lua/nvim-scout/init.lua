@@ -1,5 +1,5 @@
+_G.Scout_Consts = require("nvim-scout.lib.consts")
 local searchbar_manager = require("nvim-scout.lib.searchbar_manager")
-local consts = require("nvim-scout.lib.consts")
 local config_parser = require("nvim-scout.lib.config_parser")
 local theme_parser = require("nvim-scout.lib.theme_parser")
 local window_manager = require("nvim-scout.lib.window_manager")
@@ -13,7 +13,7 @@ local SCOUT = {}
 
 function SCOUT.setup(user_options)
     local scout_config = config_parser:new(user_options):parse_config()
-    SCOUT.namespace = vim.api.nvim_create_namespace(consts.highlight.SCOUT_NAMESPACE)
+    SCOUT.namespace = vim.api.nvim_create_namespace(Scout_Consts.highlight.SCOUT_NAMESPACE)
     SCOUT.autocmd_group = vim.api.nvim_create_augroup('SCOUT', {})
     SCOUT.register_global_components(scout_config.logging, scout_config.theme)
     SCOUT.init(scout_config)
@@ -22,15 +22,15 @@ function SCOUT.setup(user_options)
 end
 
 function SCOUT.init(scout_config)
-    SCOUT.searchbar_id = consts.search.search_name
+    SCOUT.searchbar_id = Scout_Consts.search.search_name
     SCOUT.searchbar_ext_id = "search_ext_mark"
     SCOUT.window_manager = window_manager:new()
-    SCOUT.search_events = events:new(consts.buffer.VALID_LUA_EVENTS)
+    SCOUT.search_events = events:new(Scout_Consts.buffer.VALID_LUA_EVENTS)
     SCOUT.mode_mgr = mode_mgr:new(SCOUT.namespace, SCOUT.window_manager, Scout_Theme, SCOUT.searchbar_id, search_mode)
     SCOUT.searchbar_manager = searchbar_manager:new(SCOUT.searchbar_id, SCOUT.window_manager, scout_config.search, SCOUT.searchbar_ext_id, Scout_Theme)
     SCOUT.search_modes = {}
     SCOUT.highlighter = highlighter:new(SCOUT.namespace, SCOUT.mode_mgr)
-    SCOUT.history = history:new(consts.history.MAX_ENTRIES)
+    SCOUT.history = history:new(Scout_Consts.history.MAX_ENTRIES)
 end
 
 function SCOUT.register_components(scout_config)
@@ -67,18 +67,18 @@ function SCOUT.run_search()
 end
 
 function SCOUT.register_search_modes()
-    SCOUT.search_modes[consts.modes.case_sensitive] = {
+    SCOUT.search_modes[Scout_Consts.modes.case_sensitive] = {
         name = "Match Case",
         symbol = "C",
-        text_color = consts.colorscheme_groups.m_case_title_c,
-        border_hl = consts.colorscheme_groups.m_case_border_c
+        text_color = Scout_Consts.colorscheme_groups.m_case_title_c,
+        border_hl = Scout_Consts.colorscheme_groups.m_case_border_c
     }
 
-    SCOUT.search_modes[consts.modes.lua_pattern] = {
+    SCOUT.search_modes[Scout_Consts.modes.lua_pattern] = {
         name= "Lua Pattern",
         symbol = "P",
-        text_color = consts.colorscheme_groups.m_pat_title_c,
-        border_hl = consts.colorscheme_groups.m_pat_title_c
+        text_color = Scout_Consts.colorscheme_groups.m_pat_title_c,
+        border_hl = Scout_Consts.colorscheme_groups.m_pat_title_c
     }
 
     for _, mode in pairs(SCOUT.search_modes) do
@@ -200,7 +200,7 @@ function SCOUT.next_match()
     if query and #query > 0 then
         SCOUT.history:add_entry(query) -- add the entry
     end
-    local next_index = SCOUT.highlighter:get_closest_match(consts.search.FORWARD)
+    local next_index = SCOUT.highlighter:get_closest_match(Scout_Consts.search.FORWARD)
     SCOUT.move_selected_match(next_index)
 end
 
@@ -219,7 +219,7 @@ function SCOUT.previous_match()
     if query and #query > 0 then
         SCOUT.history:add_entry(query) -- add the entry
     end
-    local next_index = SCOUT.highlighter:get_closest_match(consts.search.BACKWARD)
+    local next_index = SCOUT.highlighter:get_closest_match(Scout_Consts.search.BACKWARD)
     SCOUT.move_selected_match(next_index)
 end
 
@@ -243,12 +243,12 @@ function SCOUT.move_selected_match(index)
 end
 
 function SCOUT.toggle_case_mode()
-    SCOUT.mode_mgr:toggle_mode(consts.modes.case_sensitive)
+    SCOUT.mode_mgr:toggle_mode(Scout_Consts.modes.case_sensitive)
     SCOUT.run_search()
 end
 
 function SCOUT.toggle_pattern_mode()
-    SCOUT.mode_mgr:toggle_mode(consts.modes.lua_pattern)
+    SCOUT.mode_mgr:toggle_mode(Scout_Consts.modes.lua_pattern)
     SCOUT.run_search()
 end
 
@@ -322,7 +322,7 @@ end
 
 function SCOUT.scout_graceful_close(ev)
     local targetWin = ev.file
-    if targetWin:find(consts.search.search_name, 1, true) then
+    if targetWin:find(Scout_Consts.search.search_name, 1, true) then
         vim.schedule(function ()
             SCOUT.close_search()
         end)
@@ -330,12 +330,12 @@ function SCOUT.scout_graceful_close(ev)
 end
 
 function SCOUT.register_autocmds()
-    vim.api.nvim_create_autocmd({consts.events.WINDOW_RESIZED}, {
+    vim.api.nvim_create_autocmd({Scout_Consts.events.WINDOW_RESIZED}, {
         group = SCOUT.autocmd_group,
         callback = SCOUT.handle_resize
     })
 
-    vim.api.nvim_create_autocmd({consts.events.WINDOW_LEAVE_EVENT}, {
+    vim.api.nvim_create_autocmd({Scout_Consts.events.WINDOW_LEAVE_EVENT}, {
         group = SCOUT.autocmd_group,
         callback = function(ev)
             if ev.buf == SCOUT.query_buffer then
@@ -345,22 +345,22 @@ function SCOUT.register_autocmds()
         end,
     })
 
-    vim.api.nvim_create_autocmd({consts.events.BUFFER_ENTER}, {
+    vim.api.nvim_create_autocmd({Scout_Consts.events.BUFFER_ENTER}, {
         group = SCOUT.autocmd_group,
         callback = SCOUT.update_scout_context
     })
     --
-    vim.api.nvim_create_autocmd({consts.events.BUFFER_ENTER}, {
+    vim.api.nvim_create_autocmd({Scout_Consts.events.BUFFER_ENTER}, {
         group = SCOUT.autocmd_group,
         callback = SCOUT.force_search_window
     })
 
-    vim.api.nvim_create_autocmd({consts.events.QUIT_PRE_HOOK}, {
+    vim.api.nvim_create_autocmd({Scout_Consts.events.QUIT_PRE_HOOK}, {
         group = SCOUT.autocmd_group,
         callback = SCOUT.scout_graceful_close
     })
 
-    vim.api.nvim_create_autocmd({consts.events.WINDOW_ENTER_EVENT, consts.events.TAB_ENTER_EVENT}, {
+    vim.api.nvim_create_autocmd({Scout_Consts.events.WINDOW_ENTER_EVENT, Scout_Consts.events.TAB_ENTER_EVENT}, {
         group = SCOUT.autocmd_group,
         callback = function(ev)
             vim.schedule(function()

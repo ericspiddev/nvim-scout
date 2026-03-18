@@ -1,8 +1,8 @@
 local logger = require('nvim-scout.lib.scout_logger')
 local mock = require('luassert.mock')
 local match = require('luassert.match')
-local consts = require('nvim-scout.lib.consts')
 local search_mode = require('nvim-scout.lib.search_mode')
+local consts = require("nvim-scout.lib.consts")
 spec_utils = {}
 
 spec_utils.__index = spec_utils
@@ -168,6 +168,11 @@ function spec_utils:scout_print_was_called(level, message, var)
     end
     print_fn:clear() -- clears the call history
 
+end
+
+
+function spec_utils:register_global_consts()
+    _G.Scout_Consts = require("nvim-scout.lib.consts")
 end
 
 function spec_utils:register_global_logger()

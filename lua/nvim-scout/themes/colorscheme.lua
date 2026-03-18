@@ -1,4 +1,3 @@
-local consts = require("nvim-scout.lib.consts")
 local scout_colorscheme = {}
 scout_colorscheme.__index = scout_colorscheme
 
@@ -19,7 +18,7 @@ function scout_colorscheme:register_colorscheme(name, colorscheme)
         Scout_Logger:error_print("Failed to register colorscheme because of nil namespace ", name)
         return
     end
-    for _, key in pairs(consts.colorscheme_groups) do
+    for _, key in pairs(Scout_Consts.colorscheme_groups) do
         if colorscheme[key] == nil then
             Scout_Logger:warning_print("Missing key " .. key .. "for colorsheme ", colorscheme)
         elseif key:find("scout_g") then

@@ -1,4 +1,3 @@
-local consts = require('nvim-scout.lib.consts')
 scout_window_manager = {}
 scout_window_manager.__index = scout_window_manager
 
@@ -15,8 +14,8 @@ function scout_window_manager:register_window(name, config)
     new_window.name = name
     new_window.open = false
     new_window.config = config
-    new_window.buffer = consts.buffer.INVALID_BUFFER
-    new_window.id = consts.window.INVALID_WINDOW_ID
+    new_window.buffer = Scout_Consts.buffer.INVALID_BUFFER
+    new_window.id = Scout_Consts.window.INVALID_WINDOW_ID
     new_window.extmarks = {}
     table.insert(self.windows, new_window)
 end
@@ -81,8 +80,8 @@ function scout_window_manager:close_window_by_name(name)
     self:perform_window_action(name, function (window)
         if window.open then
             self:cleanup_window_resources(window)
-            window.buffer = consts.buffer.INVALID_BUFFER
-            window.id = consts.window.INVALID_WINDOW_ID
+            window.buffer = Scout_Consts.buffer.INVALID_BUFFER
+            window.id = Scout_Consts.window.INVALID_WINDOW_ID
             window.open = false
         end
     end)
@@ -158,7 +157,7 @@ end
 function scout_window_manager:get_window_buf_contents(name)
     local buffer = self:get_window_buffer(name)
     if buffer then
-        return vim.api.nvim_buf_get_lines(buffer, consts.lines.START, consts.lines.END, false) -- let it clamp?
+        return vim.api.nvim_buf_get_lines(buffer, Scout_Consts.lines.START, Scout_Consts.lines.END, false) -- let it clamp?
     end
 end
 
@@ -176,7 +175,7 @@ function scout_window_manager:set_window_buf_contents(name, new_contents)
 
     local buffer = self:get_window_buffer(name)
     if buffer then
-        vim.api.nvim_buf_set_lines(buffer, consts.lines.START, consts.lines.END,
+        vim.api.nvim_buf_set_lines(buffer, Scout_Consts.lines.START, Scout_Consts.lines.END,
                             true, {new_contents})
     end
 end

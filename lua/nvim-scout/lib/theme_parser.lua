@@ -1,6 +1,5 @@
 local border_types = require('nvim-scout.lib.config_options').border_types
-local consts = require('nvim-scout.lib.consts')
-local colorscheme_groups = consts.colorscheme_groups
+local colorscheme_groups = Scout_Consts.colorscheme_groups
 scout_theme_parser = {}
 scout_theme_parser.__index = scout_theme_parser
 
@@ -16,9 +15,9 @@ function setup_theme_colorscheme(theme_colorscheme)
     local colorscheme_dir = "nvim-scout.themes.colorschemes"
     local custom_scheme_path = colorscheme_dir .. "." .. theme_colorscheme
 
-    require(colorscheme_dir .. "." .. consts.search.default_scheme)
+    require(colorscheme_dir .. "." .. Scout_Consts.search.default_scheme)
 
-    if theme_colorscheme ~= consts.search.default_scheme then
+    if theme_colorscheme ~= Scout_Consts.search.default_scheme then
         local success = pcall(require, custom_scheme_path)
         if not success then
             Scout_Logger:error_print("Missing colorscheme named " .. theme_colorscheme .. " will use default")
@@ -63,7 +62,7 @@ function scout_theme_parser:apply_colorscheme(border, name)
 end
 
 function scout_theme_parser:get_searchbar_title()
-    return {{consts.search.search_top_text, colorscheme_groups.s_title_c}}
+    return {{Scout_Consts.search.search_top_text, colorscheme_groups.s_title_c}}
 end
 
 return scout_theme_parser
