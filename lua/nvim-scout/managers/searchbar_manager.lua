@@ -1,4 +1,3 @@
-local consts = require("nvim-scout.lib.consts")
 scout_searchbar_manager = {}
 scout_searchbar_manager.__index = scout_searchbar_manager
 

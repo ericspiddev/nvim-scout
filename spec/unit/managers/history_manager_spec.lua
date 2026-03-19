@@ -1,4 +1,4 @@
-local history = require("nvim-scout.lib.history_manager")
+local history = require("nvim-scout.managers.history_manager")
 
 describe('history', function ()
     it('knows when the list is empty or not', function ()

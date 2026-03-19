@@ -1,4 +1,4 @@
-local logger = require('nvim-scout.lib.scout_logger')
+local logger = require('nvim-scout.utils.scout_logger')
 config_options = {}
 
 config_options.scout_sizes = {

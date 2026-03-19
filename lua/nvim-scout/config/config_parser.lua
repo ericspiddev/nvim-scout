@@ -1,6 +1,5 @@
-local consts = require('nvim-scout.lib.consts')
-local config_options = require('nvim-scout.lib.config_options')
-local config = require('nvim-scout.lib.config')
+local config_options = require('nvim-scout.config.config_options')
+local config = require('nvim-scout.config.config')
 
 scout_config_parser = {}
 
@@ -51,19 +50,19 @@ function size_to_percentage(size)
     local search_bar_sizes = config_options.scout_sizes
 
     if size == search_bar_sizes.XS then
-        return consts.sizes.xs
+        return Scout_Consts.sizes.xs
     elseif size == search_bar_sizes.SMALL then
-        return consts.sizes.small
+        return Scout_Consts.sizes.small
     elseif size == search_bar_sizes.MED then
-        return consts.sizes.medium
+        return Scout_Consts.sizes.medium
     elseif size == search_bar_sizes.LARGE then
-        return consts.sizes.large
+        return Scout_Consts.sizes.large
     elseif size == search_bar_sizes.XL then
-        return consts.sizes.xl
+        return Scout_Consts.sizes.xl
     elseif size == search_bar_sizes.FULL then
-        return consts.sizes.full
+        return Scout_Consts.sizes.full
     else
-        return consts.sizes.medium
+        return Scout_Consts.sizes.medium
     end
 end
 

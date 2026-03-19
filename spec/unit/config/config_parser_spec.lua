@@ -1,25 +1,25 @@
-local consts = require('nvim-scout.lib.consts')
-local config = require('nvim-scout.lib.config').new()
-local parser = require('nvim-scout.lib.config_parser')
 local utils = require('spec.spec_utils')
-local config_options = require('nvim-scout.lib.config_options')
 utils:register_global_logger()
+utils:register_global_consts()
+local config = require('nvim-scout.config.config').new()
+local parser = require('nvim-scout.config.config_parser')
+local config_options = require('nvim-scout.config.config_options')
 
 sizes = config_options.scout_sizes
 log_levels = config_options.scout_log_level
 
 function width_to_size(width)
-    if width == consts.sizes.xs then
+    if width == Scout_Consts.sizes.xs then
         return sizes.XS
-    elseif width == consts.sizes.small then
+    elseif width == Scout_Consts.sizes.small then
         return sizes.SMALL
-    elseif width == consts.sizes.medium then
+    elseif width == Scout_Consts.sizes.medium then
         return sizes.MED
-    elseif width == consts.sizes.large then
+    elseif width == Scout_Consts.sizes.large then
         return sizes.LARGE
-    elseif width == consts.sizes.xl then
+    elseif width == Scout_Consts.sizes.xl then
         return sizes.XL
-    elseif width == consts.sizes.full then
+    elseif width == Scout_Consts.sizes.full then
         return sizes.FULL
     end
 end
@@ -39,7 +39,7 @@ describe('Config Parser', function ()
         }
         local p = scout_config_parser:new(opts)
         local conf = p:parse_config()
-        assert.equals(conf.search.size, consts.sizes.xl)
+        assert.equals(conf.search.size, Scout_Consts.sizes.xl)
         assert.equals(conf.logging.level, log_levels.OFF)
 
         opts = {
@@ -49,7 +49,7 @@ describe('Config Parser', function ()
         }
         p = scout_config_parser:new(opts)
         conf = p:parse_config()
-        assert.equals(conf.search.size, consts.sizes.medium)
+        assert.equals(conf.search.size, Scout_Consts.sizes.medium)
         assert.equals(conf.logging.level, log_levels.INFO)
 
         p = scout_config_parser:new()
@@ -92,7 +92,7 @@ describe('Config Parser', function ()
         assert.equals(conf.keymaps.prev_history, defaults.keymaps.prev_history)
         assert.equals(conf.keymaps.next_history, defaults.keymaps.next_history)
         assert.equals(conf.keymaps.pattern_toggle, defaults.keymaps.pattern_toggle)
-        assert.equals(conf.search.size, consts.sizes.large)
+        assert.equals(conf.search.size, Scout_Consts.sizes.large)
         assert.equals(conf.search.theme, defaults.search.theme)
         assert.equals(conf.logging.level, log_levels.INFO)
     end)
@@ -105,7 +105,7 @@ describe('Config Parser', function ()
             whoknows = 2.0
         }
         search = p:convert_search_section(search)
-        assert.equals(search.size, consts.sizes.full)
+        assert.equals(search.size, Scout_Consts.sizes.full)
         assert.equals(search.name, "test")
         assert.equals(search.whoknows, 2.0)
 
@@ -115,7 +115,7 @@ describe('Config Parser', function ()
             whoknows = {}
         }
         search = p:convert_search_section(search)
-        assert.equals(search.size, consts.sizes.xl)
+        assert.equals(search.size, Scout_Consts.sizes.xl)
         assert.equals(search.name, "test2")
         assert.same(search.whoknows, {})
 
@@ -123,25 +123,25 @@ describe('Config Parser', function ()
             size = sizes.LARGE,
         }
         search = p:convert_search_section(search)
-        assert.equals(search.size, consts.sizes.large)
+        assert.equals(search.size, Scout_Consts.sizes.large)
 
         search = {
             size = sizes.MED,
         }
         search = p:convert_search_section(search)
-        assert.equals(search.size, consts.sizes.medium)
+        assert.equals(search.size, Scout_Consts.sizes.medium)
 
         search = {
             size = sizes.SMALL,
         }
         search = p:convert_search_section(search)
-        assert.equals(search.size, consts.sizes.small)
+        assert.equals(search.size, Scout_Consts.sizes.small)
 
         search = {
             size = sizes.XS,
         }
         search = p:convert_search_section(search)
-        assert.equals(search.size, consts.sizes.xs)
+        assert.equals(search.size, Scout_Consts.sizes.xs)
 
     end)
 
@@ -198,31 +198,31 @@ describe('Config Parser', function ()
      it('parse_config properly calls convert_to_search_section', function ()
          local p = parser:new({search = {size = sizes.XS}})
          local parsed_conf = p:parse_config()
-         assert.equals(parsed_conf.search.size, consts.sizes.xs)
+         assert.equals(parsed_conf.search.size, Scout_Consts.sizes.xs)
 
          p = parser:new({search = {size = sizes.SMALL}})
          parsed_conf = p:parse_config()
-         assert.equals(parsed_conf.search.size, consts.sizes.small)
+         assert.equals(parsed_conf.search.size, Scout_Consts.sizes.small)
 
          p = parser:new({search = {size = sizes.MED}})
          parsed_conf = p:parse_config()
-         assert.equals(parsed_conf.search.size, consts.sizes.medium)
+         assert.equals(parsed_conf.search.size, Scout_Consts.sizes.medium)
 
          p = parser:new({search = {size = sizes.LARGE}})
          parsed_conf = p:parse_config()
-         assert.equals(parsed_conf.search.size, consts.sizes.large)
+         assert.equals(parsed_conf.search.size, Scout_Consts.sizes.large)
 
          p = parser:new({search = {size = sizes.XL}})
          parsed_conf = p:parse_config()
-         assert.equals(parsed_conf.search.size, consts.sizes.xl)
+         assert.equals(parsed_conf.search.size, Scout_Consts.sizes.xl)
 
          p = parser:new({search = {size = sizes.FULL}})
          parsed_conf = p:parse_config()
-         assert.equals(parsed_conf.search.size, consts.sizes.full)
+         assert.equals(parsed_conf.search.size, Scout_Consts.sizes.full)
 
          p = parser:new({search = {size = 1002}}) --undefined should result in medium
          parsed_conf = p:parse_config()
-         assert.equals(parsed_conf.search.size, consts.sizes.medium)
+         assert.equals(parsed_conf.search.size, Scout_Consts.sizes.medium)
 
         p = parser:new() -- handles parsing no search section
         p.defaults = {

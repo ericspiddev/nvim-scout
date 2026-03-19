@@ -1,7 +1,7 @@
 scout_highlighter = {}
 scout_highlighter.__index = scout_highlighter
-local match_obj = require("nvim-scout.lib.match")
-local pattern_handler = require("nvim-scout.lib.pattern_handler"):new(Scout_Consts.modes.escape_chars)
+local match_obj = require("nvim-scout.search.match")
+local pattern_handler = require("nvim-scout.search.pattern_handler"):new(Scout_Consts.modes.escape_chars)
 
 function scout_highlighter:new(hl_namespace, mode_mgr)
     local obj = {
