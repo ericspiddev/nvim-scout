@@ -1,7 +1,7 @@
 local scout = require('nvim-scout.init')
 local utils = require('spec.spec_utils')
-local consts = require('nvim-scout.lib.consts')
-local def_keymaps = require('nvim-scout.lib.config').defaults.keymaps
+local consts = require('nvim-scout.utils.consts')
+local def_keymaps = require('nvim-scout.config.config').defaults.keymaps
 local func_helpers = require('spec.functional.f_spec_helpers')
 
 local LUA_PATTERN_MODE = consts.modes.lua_pattern

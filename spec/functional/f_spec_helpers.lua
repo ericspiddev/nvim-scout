@@ -1,5 +1,5 @@
 local utils = require('spec.spec_utils')
-local def_keymaps = require('nvim-scout.lib.config').defaults.keymaps
+local def_keymaps = require('nvim-scout.config.config').defaults.keymaps
 f_spec_helpers = {}
 
 f_spec_helpers.WINDOW_DIRECTIONS = {

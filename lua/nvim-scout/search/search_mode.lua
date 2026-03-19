@@ -1,5 +1,4 @@
 scout_search_mode = {}
-local consts = require("nvim-scout.lib.consts")
 
 scout_search_mode.__index = scout_search_mode
 function scout_search_mode:new(mode_name, mode_symbol, ns, text_color, border_hl)

@@ -1,4 +1,4 @@
-local config_options = require('nvim-scout.lib.config_options')
+local config_options = require('nvim-scout.config.config_options')
 
 logging_defaults = {
     level = config_options.scout_log_level.OFF

@@ -1,5 +1,5 @@
 local scout = require('nvim-scout.init')
-local default_conf = require('nvim-scout.lib.config').defaults
+local default_conf = require('nvim-scout.config.config').defaults
 local utils = require('spec.spec_utils')
 local func_helpers = require('spec.functional.f_spec_helpers')
 

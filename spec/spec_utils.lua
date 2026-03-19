@@ -1,8 +1,8 @@
-local logger = require('nvim-scout.lib.scout_logger')
+local logger = require('nvim-scout.utils.scout_logger')
 local mock = require('luassert.mock')
 local match = require('luassert.match')
-local search_mode = require('nvim-scout.lib.search_mode')
-local consts = require("nvim-scout.lib.consts")
+local search_mode = require('nvim-scout.search.search_mode')
+local consts = require("nvim-scout.utils.consts")
 spec_utils = {}
 
 spec_utils.__index = spec_utils
@@ -172,7 +172,7 @@ end
 
 
 function spec_utils:register_global_consts()
-    _G.Scout_Consts = require("nvim-scout.lib.consts")
+    _G.Scout_Consts = require("nvim-scout.utils.consts")
 end
 
 function spec_utils:register_global_logger()

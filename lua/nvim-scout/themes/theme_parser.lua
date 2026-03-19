@@ -1,4 +1,4 @@
-local border_types = require('nvim-scout.lib.config_options').border_types
+local border_types = require('nvim-scout.config.config_options').border_types
 local colorscheme_groups = Scout_Consts.colorscheme_groups
 scout_theme_parser = {}
 scout_theme_parser.__index = scout_theme_parser

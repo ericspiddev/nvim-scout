@@ -1,7 +1,7 @@
-local events = require('nvim-scout.lib.events')
+local events = require('nvim-scout.events.events')
 local stub = require('luassert.stub')
 local utils = require('spec.spec_utils')
-local log_levels = require('nvim-scout.lib.scout_logger').LOG_LEVELS
+local log_levels = require('nvim-scout.utils.scout_logger').LOG_LEVELS
 utils:register_global_logger()
 utils:register_global_consts()
 
