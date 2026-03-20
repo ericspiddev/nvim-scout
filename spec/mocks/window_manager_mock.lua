@@ -133,10 +133,6 @@ function mock_window_manager:get_window_buffer(name)
     return self:get_window_field(name, "buffer", vim.api.nvim_buf_is_valid)
 end
 
-function mock_window_manager:get_window_host(name)
-    return self:get_window_field(name, "host")
-end
-
 function mock_window_manager:get_window_buf_contents(name)
     return self:perform_window_action(name, function (window)
         return window.contents

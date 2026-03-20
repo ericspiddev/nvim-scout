@@ -175,6 +175,11 @@ function spec_utils:register_global_consts()
     _G.Scout_Consts = require("nvim-scout.utils.consts")
 end
 
+function spec_utils:register_global_colorscheme()
+    _G.Scout_Colorscheme = require("nvim-scout.themes.colorscheme"):init(0)
+    Scout_Colorscheme.schemes = {}
+end
+
 function spec_utils:register_global_logger()
     if _G.Scout_Logger == nil then
         _G.Scout_Logger = logger:new({level = logger.LOG_LEVELS.OFF}, vim.print)
