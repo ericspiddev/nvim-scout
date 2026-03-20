@@ -28,17 +28,17 @@ end
 function scout_theme_parser:get_window_border(name)
     local border = nil
     if self.border_type == border_types.DOUBLE_BAR then
-        border = { "╔", "═","╗", "║", "╝", "═", "╚", "║" }
+        border = Scout_Consts.borders.double
     elseif self.border_type == border_types.SINGLE_BAR then
-        border = {"┌", "─", "┐", "│", "┘", "─", "└", "│" }
+        border = Scout_Consts.borders.single
     elseif self.border_type == border_types.ROUNDED then
-        border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" }
+        border = Scout_Consts.borders.rounded
     elseif self.border_type == border_types.THICK then
-        border = { "┏", "━", "┓", "┃", "┛", "━", "┗", "┃" }
+        border = Scout_Consts.borders.thick
     elseif self.border_type == border_types.ASCII then
-        border = { "+", "-", "+", "|", "+", "-", "+", "|" }
+        border = Scout_Consts.borders.ascii
     elseif self.border_type == border_types.MINIMAL then
-        border = { " ", "─", " ", " ", " ", "─", " ", " " }
+        border = Scout_Consts.borders.minimal
     else
         Scout_Logger:error_print("Invalid border type for scout windows", self.border_type)
         return nil
