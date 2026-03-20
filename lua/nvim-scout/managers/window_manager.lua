@@ -1,7 +1,6 @@
 scout_window_manager = {}
 scout_window_manager.__index = scout_window_manager
 
-
 function scout_window_manager:new()
     local obj = {
         windows = {},
@@ -39,7 +38,6 @@ function scout_window_manager:open_window_by_name(name, namespace)
     self:perform_window_action(name, function (window)
         if not window.open then
             local win_config = window.config
-
             self:cleanup_window_resources(window)
             window.buffer = vim.api.nvim_create_buf(win_config.buffer.list_buf, win_config.buffer.scratch_buf)
             if win_config.buffer.name then
@@ -82,7 +80,11 @@ function scout_window_manager:close_window_by_name(name)
             self:cleanup_window_resources(window)
             window.buffer = Scout_Consts.buffer.INVALID_BUFFER
             window.id = Scout_Consts.window.INVALID_WINDOW_ID
+            window.host = Scout_Consts.window.INVALID_WINDOW_ID
             window.open = false
+            if window.namespace then
+                window.namespace = nil
+            end
         end
     end)
 end
@@ -93,7 +95,8 @@ function scout_window_manager:cleanup_window_resources(window)
     end
 
     if window.buffer and vim.api.nvim_buf_is_valid(window.buffer) then
-        vim.api.nvim_buf_delete(window.buffer, {force = true}) -- buffer must be deleted after window otherwise window_close gives bad id
+        -- buffer must be deleted after window otherwise window_close gives bad id
+        vim.api.nvim_buf_delete(window.buffer, {force = true})
     end
 end
 
@@ -105,7 +108,6 @@ function scout_window_manager:update_nvim_window_config(name, new_config)
         end
     end
 end
-
 
 function scout_window_manager:update_window_config(name, new_config)
     local window = self:get_managed_window(name)
@@ -134,9 +136,6 @@ function scout_window_manager:get_window_field(name, field, validator)
     end)
 end
 
-function scout_window_manager:set_window_field(name, field, value, validator)
-    return self:get_window_field(name, "conf")
-end
 
 function scout_window_manager:is_window_open(name)
     return self:get_window_field(name, "open")
@@ -144,14 +143,6 @@ end
 
 function scout_window_manager:get_window_buffer(name)
     return self:get_window_field(name, "buffer", vim.api.nvim_buf_is_valid)
-end
-
-function scout_window_manager:get_window_host(name)
-    return self:get_window_field(name, "host", function(host) return host and vim.api.nvim_win_is_valid(host) end)
-end
-
-function scout_window_manager:update_window_host(name, new_host)
-    return self:set_window_field(name, "host", new_host, vim.api.nvim_win_is_valid)
 end
 
 function scout_window_manager:get_window_buf_contents(name)
@@ -193,7 +184,7 @@ function scout_window_manager:set_window_extmarks(name, line_start, line_end, op
 end
 
 function scout_window_manager:get_window_extmark(name, extmark_id)
-    self:perform_window_action(name, function (window)
+    return self:perform_window_action(name, function (window)
         return window.extmarks[extmark_id]
     end)
 end
