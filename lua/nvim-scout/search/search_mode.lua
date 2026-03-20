@@ -31,7 +31,6 @@ function scout_search_mode:update_banner_config(border, display_col, search_bar_
     self.banner_config["col"] = display_col
     self.banner_config["win"] = search_bar_window
     self.display_col = display_col
-    return self.banner_config
 end
 
 function scout_search_mode:get_banner_display_width()
