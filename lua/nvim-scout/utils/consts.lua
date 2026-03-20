@@ -86,6 +86,14 @@
         m_virt_text_c = "mode_virt_text_color",
         search_result = "scout_g_search_result",
         selected_result = "scout_g_selected_result",
+     },
+     borders = {
+        rounded = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+        single = {"┌", "─", "┐", "│", "┘", "─", "└", "│" },
+        double = { "╔", "═","╗", "║", "╝", "═", "╚", "║" },
+        thick = { "┏", "━", "┓", "┃", "┛", "━", "┗", "┃" },
+        ascii = { "+", "-", "+", "|", "+", "-", "+", "|" },
+        minimal = { " ", "─", " ", " ", " ", "─", " ", " " }
      }
  }
 
