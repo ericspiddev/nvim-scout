@@ -52,14 +52,16 @@ function scout_mode_manager:toggle_mode(mode_index)
         self.window_manager:close_window_by_name(target_mode.name, self.namespace)
     else
         local border = self.theme:get_window_border(banner_window_id)
-        local banner_config = target_mode:update_banner_config(border, self.next_banner_col, search_window.id)
-        self.window_manager:update_nvim_window_config(banner_window_id, banner_config)
+        target_mode:update_banner_config(border, self.next_banner_col, search_window.id)
+        self.window_manager:update_nvim_window_config(banner_window_id, target_mode.banner_config)
         self.window_manager:open_window_by_name(target_mode.name, self.namespace)
         self.window_manager:set_window_buf_contents(banner_window_id, " " ..target_mode.name .." ")
         self.window_manager:set_window_extmarks(banner_window_id, 0, 1, {
             end_col = #target_mode.name + Scout_Consts.modes.padding_space,
             hl_group = target_mode.text_hl}, "modifier_description")
-        self.next_banner_col = self.next_banner_col + target_mode:get_banner_display_width() + target_mode:get_extra_padding()
+        self.next_banner_col = self.next_banner_col
+                                + target_mode:get_banner_display_width()
+                                + target_mode:get_extra_padding()
     end
     target_mode.active = not target_mode.active
 end
