@@ -22,13 +22,13 @@ function scout_keymaps:set_keymap(id, buffer, options)
             noremap = true
         }
 
+        options = options or default_options
+
         if buffer and vim.api.nvim_buf_is_valid(buffer) then
-            default_options["buffer"] = buffer
+            options["buffer"] = buffer
         end
 
-        if not options then
-            keymap["options"] = default_options
-        end
+        keymap.options = options
         vim.keymap.set(keymap.mode, keymap.key, keymap.handler, keymap.options)
         keymap.active = true
     end
