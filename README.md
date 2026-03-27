@@ -1,5 +1,5 @@
 # :mag: Nvim-Scout
-A neovim searchbar with enhanced options for finding text quicker within the same file
+A neovim searchbar with enhanced options for same-file searching
 
 ## :question: What is Nvim-Scout
 Nvim-Scout is a neovim extension that enhances same-file search functionality
@@ -122,7 +122,7 @@ in the free book *Programming in Lua*. Some quick examples are as follows:
 
 
 <ins>Lua Pattern Examples</ins>
-1. `\[node\]` - highlights any of the letters n, o, d or e at any point in the buffer
+1. `[node]` - highlights any of the letters n, o, d or e at any point in the buffer
 2. `test.*` - highlights test and anything after it on the same line
 3. `%u` - find all upper case letters in a file
 
@@ -245,21 +245,37 @@ is very spammy.
 
 To adjust any variable for those tables all you need to do is make a nested
 table in the `opts` function of your configuration like shown below which
-as an examples set's the colorscheme to `onedark` and toggle search key
-to `S`.
-
+as an examples set's all of the 
 ```lua
-... rest of config above
     opts = function()
+        local config_options = require('nvim-scout.config.config_options') -- access to enums
         return {
+            logging = {
+                level = config_options.scout_log_level.WARNING
+            },
+            search = {
+                size = config_options.scout_sizes.LARGE
+            },
             keymaps = {
-                toggle_search = "S",
+                toggle_search = 'a',
+                toggle_focus = 'b',
+                clear_search = 'c',
+                search_curr_word = 'd',
+                prev_result = 'e',
+                next_result = 'f',
+                prev_history = 'g',
+                next_history = 'd',
+                case_sensitive_toggle = 'h',
+                pattern_toggle = 'i',
+                toggle_search = "j",
+                next_entry = "k",
             },
             theme = {
-                colorscheme = "onedark"
+                border_type = config_options.border_types.SINGLE_BAR,
+                colorscheme = "new_scheme"
             }
+        }
     end
-... rest of config below
 ```
 
 ### Config Options
