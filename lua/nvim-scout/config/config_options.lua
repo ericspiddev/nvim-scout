@@ -10,9 +10,6 @@ config_options.scout_sizes = {
     FULL = 5
 }
 
-config_options.scout_themes = {
-    DEFAULT = 0,
-}
 config_options.border_types = {
     SINGLE_BAR = 0,
     DOUBLE_BAR = 1,

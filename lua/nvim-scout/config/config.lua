@@ -27,14 +27,12 @@ theme_defaults = {
 }
 
 local config = {
-
-defaults = {
-    keymaps = keymap_defaults,
-    search = search_bar_defaults,
-    logging = logging_defaults,
-    theme = theme_defaults,
-}
-
+    defaults = {
+        keymaps = keymap_defaults,
+        search = search_bar_defaults,
+        logging = logging_defaults,
+        theme = theme_defaults,
+    }
 }
 
 local function create_config_copy(t)
