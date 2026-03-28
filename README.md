@@ -116,12 +116,20 @@ of those modes are laid out below
 - <ins>*Match Case*:</ins> Only highlight matches that have the exact case specifed in the
 contents of the searchbar if this mode is off all searchs are case insensitive
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/modes/match-case.gif" />
+</div>
+
 - <ins>*Lua Pattern*:</ins> This mode allows you to search your buffer using Lua's Pattern engine. If you
 are not familiar with those I recommend reading this [section](https://www.lua.org/pil/20.2.html)
 in the free book *Programming in Lua*. Some quick examples are as follows:
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/modes/lua-pattern.gif" />
+</div>
 
-<ins>Lua Pattern Examples</ins>
+
+<ins>Extra Lua Pattern Examples</ins>
 1. `[node]` - highlights any of the letters n, o, d or e at any point in the buffer
 2. `test.*` - highlights test and anything after it on the same line
 3. `%u` - find all upper case letters in a file
@@ -130,6 +138,19 @@ There are many more patterns that can be a lot more useful and they all can be u
 nvim-scout's lua pattern mode! Anything invalid will display Invalid Pattern in the
 searchbar text and captures are disabled as their use makes little sense for this purpose
 
+
+## :gear: Nvim-Scout Search History :book:
+Scout allows you to look back at up to 100 of your last searches within a session.
+Current persistant history is not an option so leaving a session resets your history
+but it's on the radar to be added. By using the `prev_history` and `next_history`
+you can iterate through searches you've made. It's important to know that until you
+search something it is not added to the history list. By search I mean press the
+`next_result` or `prev_results` keys with some text in the search bar. Doing so adds it to
+the history list and it can then be navigated too using `prev_history` and `next_history`
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/demo/nvim-scout.gif" />
+</div>
 
 ## :art: Nvim-Scout Colorschemes
 Scout comes with the option to use either premade colorschemes or create your own
@@ -245,7 +266,8 @@ is very spammy.
 
 To adjust any variable for those tables all you need to do is make a nested
 table in the `opts` function of your configuration like shown below which
-as an examples set's all of the 
+as an examples set's all of the keymaps in order of the alphabet (I would not
+recommend this as an actual config :) )
 ```lua
     opts = function()
         local config_options = require('nvim-scout.config.config_options') -- access to enums
