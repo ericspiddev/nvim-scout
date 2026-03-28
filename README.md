@@ -9,7 +9,7 @@ If you no longer wish to see it you can simply toggle the bar and it's hidden
 until you decide to search again :)
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/nvim-scout.gif" />
+  <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/demo/nvim-scout.gif" />
 </div>
 
 *The side window that shows how scout can resize is not part of scout but is [neotree](https://github.com/nvim-neo-tree/neo-tree.nvim)*
@@ -311,12 +311,12 @@ dynamically*
 
 | Enum | Value |
 | --- | --- |
-| SINGLE_BAR | {"┌", "─", "┐", "│", "┘", "─", "└", "│" } |
-| DOUBLE_BAR | { "╔", "═","╗", "║", "╝", "═", "╚", "║" }|
-| ROUNDED | { "╭", "─", "╮", "│", "╯", "─", "╰", "│" } |
-| THICK | { "┏", "━", "┓", "┃", "┛", "━", "┗", "┃" } |
-| ASCII | { "+", "-", "+", "\|", "+", "-", "+", "\|" } |
-| MINIMAL | { " ", "─", " ", " ", " ", "─", " ", " " } |
+| SINGLE_BAR | <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/borders/single_bar.png" /> |
+| DOUBLE_BAR | <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/borders/double_bar.png" />|
+| ROUNDED | <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/borders/rounded.png" />|
+| THICK | <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/borders/thick.png" />|
+| ASCII | <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/borders/ascii.png" />|
+| MINIMAL | <img src="https://raw.githubusercontent.com/ericspiddev/nvim-scout/images/v1/borders/minimal.png" />|
 
 </div>
 
